@@ -2,38 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "struct.h"
 
 //http://wiki.icmc.usp.br/images/c/c8/SCC0503012019trabalho1.pdf
-
-
-typedef struct registroCabecalho {
-    char status[1]; 
-    int  topoPilha;
-    char tagCampo1[1];
-    char desCampo1[55];
-    char tagCampo2[1];
-    char desCampo2[55];
-    char tagCampo3[1];
-    char desCampo3[55];
-    char tagCampo4[1];
-    char desCampo4[55];
-    char tagCampo5[1];
-    char desCampo5[55];
-} TregistroCabecalho;
-
-typedef struct registroDados {
-    //char removido[1]; //campos adicionais
-    //int encadeamento;
-    int nroInscricao; //3 PRIMEIROS FIXO
-    double nota;
-    char data[10]; //TODO FAZER MÁSCARA PARA DATA
-    //int tamanho_cidade;
-    char cidade[30]; //variável
-    //int tamanho_nomEscola;
-    char nomeEscola[30];
-} TregistroDados;
-//CRIAR ARQUIVO BINÁRIO
-
 
 /*Deve  ser  feita  a  diferenciação  entre  o  espaço  utilizado  e  o  lixo.  Para  tanto, todas  as stringsdevem  ser  finalizadas  com  ‘\0’  e  o  lixo  deve  ser  identificado pelo  caractere  ‘@’.Ou  seja,  quando  sobra-se  espaço  no  final  do  registro,  o registro deve ser completado com lixo até o seu final.*/
 //O campo nroInscricaonão aceita valores repetidos e nem valores nulos. •Os  campos nota, data, cidadee nomeEscolaaceitam  valores  repetidos  e valores nulos.
@@ -42,8 +13,6 @@ typedef struct registroDados {
 //variavel: não  devem  ser  armazenados  os  campos  referentes:  (i)ao  indicador  de tamanho; (ii)à tagque representa o dado;e (iii) ao valor do dado.
 //(i) removidodeve  ser  inicializado  com  o  valor ‘-’;  e  (ii) encadeamentodeve ser inicializado com o valor -1. 
 
-
-//le csv e gera arquivo binário
 
 // utilizando memcpy para armazenar os chars na struct
 void insertCabecalho(TregistroCabecalho *cabecalho) { 
@@ -150,29 +119,61 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
         }
 }
 
+void menu () {
+    int option;                
+    char *csv;
+    do {
+        puts("Selecione uma opção");
+        puts("1 - Gravação  desses  registros de csv em  um  arquivo  de  dados de saída");
+        puts("2 - Permita a recuperação dos dados, de todos os registros");
+        puts("3 -Permita  a  recuperação  dos  dados  de  todos  os  registros  que  satisfaçam  um  critério de  busca  determinado  pelo  usuário.");
+        puts("4 -Permita a recuperação dos dados de um registro, a partir da identificação do RRN (número relativo do registro) do registro desejado pelo usuário.");
+        puts("0 - para sair");
+        scanf("%d", &option);
+        switch (option) {
+            case 1:
+                puts("Entrada csv do programapara a funcionalidade [1]");
+                //scanf("%s", &csv);
+                csv = "SCC0503012019trabalho1csv.csv"; //TODO: ler via scanf
+                char buffer[1000];
+                TregistroDados dados[10000]; //
+                FILE *f = fopen(csv, "r"); //TODO: Passar como arg[0] o csv?
+                if (f == NULL) {
+            //        memcpy(reg.status, "0", 1); //todo conferir se é zero msm
+                    printf("Falha no carregamento do arquivo\n");
+                    break;
+                } 
+                int i = 0;
+                while(fgets(buffer, sizeof(buffer), f) != NULL) {
+                   lerRegistroTexto(&dados[i], buffer);
+                   printRegistro(&dados[i]);
+                    i++;             
+                }
+                fclose(f);
+                menu();
+                break;
+            case 2:
+                break;
+            case 3:
+                
+                break;
+            case 4:
+                break;
+            default:
+                break;
+        }
+    } while (option=0);
+    
+
+}
+
 int main () { 
     char paginaDisco[16000];
     TregistroCabecalho cabecalho;
-    TregistroDados dados[10000];
-    insertCabecalho(&cabecalho); // TODO  . O registro de cabeçalho deve ocupar uma página de disco. 
-    char buffer[1000];
-    FILE *f = fopen("SCC0503012019trabalho1csv.csv", "r");
-//    insertregistroDados(dados, f);
-    if (f == NULL) {
-//        memcpy(reg.status, "0", 1); //todo conferir se é zero msm
-        printf("Falha no carregamento do arquivo\n");
-        return -1;
-    } 
     
-    //Ler registros ....
-    int i = 0;
-    while(fgets(buffer, sizeof(buffer), f) != NULL) {
- //     printf("toks: %s\n", buffer);
-        lerRegistroTexto(&dados[i], buffer);
-//      printf("inscricao: %s\n",  dados[i].data);   
-        printRegistro(&dados[i]);
-        i++;             
-    }
-    fclose(f);
+    insertCabecalho(&cabecalho); // TODO  . O registro de cabeçalho deve ocupar uma página de disco. 
+
+    menu();
+    
     return 0;
 }
