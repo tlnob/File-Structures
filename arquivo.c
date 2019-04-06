@@ -84,9 +84,9 @@ int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
 void printRegistro(TregistroDados *reg) {
     char buffer[1000];
     int end = snprintf(buffer, sizeof(buffer), "%d", reg->nroInscricao);
-    int n = sizeof(buffer);
+    int bufferSize = sizeof(buffer);
     if(reg->nota != -1) {
-        end += snprintf(&buffer[end], n-end, " %.1lf ", reg->nota);
+        end += snprintf(&buffer[end], bufferSize-end, " %.1lf ", reg->nota);    
         //TODO: tratar null e checar end
     }
     if(reg->data[0] != '\0') { // tem alguma data (nulo é \0@@@)
@@ -94,12 +94,12 @@ void printRegistro(TregistroDados *reg) {
         memcpy(&buffer[end], reg->data, sizeof(reg->data)); //end está na posição que a data deve ser gravada
         end += sizeof(reg->data); //pega  posição até o registro.nota com o end, para entar usar o memcpy e armazenar o restante, pois a dat possui apenas 10 char
     }
-    if(reg->cidade[0] != '\0') {
-        end += snprintf(&buffer[end], n-end, " %s", reg->cidade);
+    if(reg->nomeEscola) {
+        end += snprintf(&buffer[end], bufferSize-end, " %s", reg->cidade);
         //TODO: tratar null e checar end
     }
-    if(reg->nomeEscola[0] != '\0') {
-        end += snprintf(&buffer[end], n-end, " %s", reg->nomeEscola);
+    if(reg->nomeEscola) {
+        end += snprintf(&buffer[end], bufferSize-end, " %s", reg->nomeEscola);
         //TODO: tratar null e checar end
     }
     buffer[end] = '\0';
@@ -112,8 +112,14 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin) {
     size = fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += fwrite(&reg->data, sizeof(reg->data), 1, bin);
-    size += fwrite(&reg->cidade, sizeof(reg->cidade), 1, bin);
-    size += fwrite(&reg->nomeEscola, sizeof(reg->nomeEscola), 1, bin);
+    if(&reg->cidade && &reg->tamanho_cidade) {
+        printf("reg-cidade: %s -- ", reg->cidade);
+        size += fwrite(&reg->cidade, sizeof(reg->cidade), 1, bin);
+        size += fwrite(&reg->tamanho_cidade, sizeof(reg->tamanho_cidade), 1, bin);
+    } 
+    if(&reg->nomeEscola && reg->tamanho_nomeEscola) {
+        size += fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
+    } 
 
     return size;
 }
@@ -136,21 +142,35 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
                         memcpy(reg->data, tok, 10); //data[10] nao dá espaço para o \0
                     }
                 } 
+                /*Para os campos de tamanho variável, os valores nulos devem ser representados da seguinte forma:o
+                não  devem  ser  armazenados  os  campos  referentes:  
+                (ii) TODO: à tag que representa o dado;*/
                 else if(count == 3) {
-                    memset(reg->cidade, '@', sizeof(reg->cidade)); //@ em todos os campos
-                    reg->cidade[0] = '\0'; // \0 no primeiro campo
-                    strcpy(reg->cidade, tok); //copia registro - irá para as primeiras posições
+                    reg->cidade = malloc(strlen(tok)+1); //aloca cidade
+                    if(!reg->cidade) puts("erro"); //erro de alocação
+                    if(strlen(tok) > 0) { //se não for campo nulo
+                        reg->tamanho_cidade = strlen(tok);
+                        strcpy(reg->cidade, tok); //copia registro - irá para as primeiras posições    
+                    }
+  //                printf("cidade: %s \n", reg->cidade);
                 } 
                 else if(count == 4) {
-                    memset(reg->nomeEscola, '@', sizeof(reg->nomeEscola)); //@ em todos os campos
-                    reg->nomeEscola[0] = '\0';
-                    strcpy(reg->nomeEscola, tok);
+                    reg->nomeEscola = malloc(strlen(tok)+1); //aloca cidade
+                    if(!reg->nomeEscola) puts("erro"); //erro de alocação
+                    reg->tamanho_nomeEscola = strlen(tok); // define tamanho cidade
+                    if(strlen(tok) > 0) { // se não for campo nulo
+                        strcpy(reg->nomeEscola, tok); //copia registro - irá para as primeiras posições    
+                    } else {
+                        free(reg->nomeEscola);
+                        free(reg->tamanho_nomeEscola);
+                    }
                 }
                 count++;    
                 start = end + 1;
             }
         }
 }
+
 
 void lerArquivoTexto(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados) {
         char buffer[1000];
@@ -181,7 +201,7 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
         puts("4 -Permita a recuperação dos dados de um registro, a partir da identificação do RRN (número relativo do registro) do registro desejado pelo usuário.");
         puts("0 - para sair");
         fflush(stdout);
-        scanf("%d", &option);
+        scanf(" %d", &option); //TODO: passar o csv para ser lido aqui
         switch (option) {
             case 1:
                 lerArquivoTexto(csv, cabecalho, dados); // lê do csv para struct
@@ -192,7 +212,7 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
                     exit(-1);
                 }
                 int size = 0, i = 0;
-                while (size <= 16000) {
+                while (size <= 16000) { //TODO : 16000 fix
                     size += gravarDadosBinario(&dados[i], bin);
                     i++;
                 }
