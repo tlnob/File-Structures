@@ -28,14 +28,14 @@
     printf("\n D4: %s \n", cabecalho->desCampo4);
     printf("\n T5: %s \n", cabecalho->tagCampo5);
     printf("\n D5: %s \n", cabecalho->desCampo5);
-}*/
+}
 
-// utilizando memcpy para armazenar os chars na struct
+// função para inserir dados no cabeçalho na struct, inicializando os campos com @ e depois alocando os valores.
 void insertCabecalho(TregistroCabecalho *cabecalho) { 
 
     memset(cabecalho, '@', sizeof(TregistroCabecalho)); // inicializando tudo com @
 
-    memcpy(cabecalho->status, "x", 1);     // TODO
+    memcpy(cabecalho->status, "x", 1);     // TODO:valor certo
     cabecalho->topoPilha = -1;
     
     char charcampo1[] = "numero de inscricao do participante do ENEM";
@@ -59,9 +59,29 @@ void insertCabecalho(TregistroCabecalho *cabecalho) {
     strcpy(cabecalho->desCampo5, charcampo5);
 
 }
+*/
 
+/*
+int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
+    int size = 0;
+    
+    size =  fwrite(&cabecalho->status, sizeof(cabecalho->status), 1, bin); // gravando primeiro o cabeçalho
+    size += fwrite(&cabecalho->topoPilha, sizeof(cabecalho->topoPilha), 1, bin);
+    size += fwrite(&cabecalho->tagCampo1, sizeof(cabecalho->tagCampo1), 1, bin);
+    size += fwrite(&cabecalho->desCampo1, sizeof(cabecalho->desCampo1), 1, bin);
+    size += fwrite(&cabecalho->tagCampo2, sizeof(cabecalho->tagCampo2), 1, bin);
+    size += fwrite(&cabecalho->desCampo2, sizeof(cabecalho->desCampo2), 1, bin);
+    size += fwrite(&cabecalho->tagCampo3, sizeof(cabecalho->tagCampo3), 1, bin);
+    size += fwrite(&cabecalho->desCampo3, sizeof(cabecalho->desCampo3), 1, bin);
+    size += fwrite(&cabecalho->tagCampo4, sizeof(cabecalho->tagCampo4), 1, bin);
+    size += fwrite(&cabecalho->desCampo4, sizeof(cabecalho->desCampo4), 1, bin);
+    size += fwrite(&cabecalho->tagCampo5, sizeof(cabecalho->tagCampo5), 1, bin);
+    size += fwrite(&cabecalho->desCampo5, sizeof(cabecalho->desCampo5), 1, bin);
 
-/*void printRegistro(TregistroDados *reg) {
+    return size;
+}*/
+
+void printRegistro(TregistroDados *reg) {
     char buffer[1000];
     int end = snprintf(buffer, sizeof(buffer), "%d", reg->nroInscricao);
     int n = sizeof(buffer);
@@ -86,37 +106,17 @@ void insertCabecalho(TregistroCabecalho *cabecalho) {
     printf("%s\n", buffer);
 }
 
-int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
-    int size = 0;
-    
-    size =  fwrite(&cabecalho->status, sizeof(cabecalho->status), 1, bin); // gravando primeiro o cabeçalho
-    size += fwrite(&cabecalho->topoPilha, sizeof(cabecalho->topoPilha), 1, bin);
-    size += fwrite(&cabecalho->tagCampo1, sizeof(cabecalho->tagCampo1), 1, bin);
-    size += fwrite(&cabecalho->desCampo1, sizeof(cabecalho->desCampo1), 1, bin);
-    size += fwrite(&cabecalho->tagCampo2, sizeof(cabecalho->tagCampo2), 1, bin);
-    size += fwrite(&cabecalho->desCampo2, sizeof(cabecalho->desCampo2), 1, bin);
-    size += fwrite(&cabecalho->tagCampo3, sizeof(cabecalho->tagCampo3), 1, bin);
-    size += fwrite(&cabecalho->desCampo3, sizeof(cabecalho->desCampo3), 1, bin);
-    size += fwrite(&cabecalho->tagCampo4, sizeof(cabecalho->tagCampo4), 1, bin);
-    size += fwrite(&cabecalho->desCampo4, sizeof(cabecalho->desCampo4), 1, bin);
-    size += fwrite(&cabecalho->tagCampo5, sizeof(cabecalho->tagCampo5), 1, bin);
-    size += fwrite(&cabecalho->desCampo5, sizeof(cabecalho->desCampo5), 1, bin);
-
-    return size;
-}
 
 int gravarDadosBinario(TregistroDados *reg, FILE *bin) {
     int size = 0;
-
-    size = fwrite(&reg->nroInscricao, sizeof(reg->nroInscricao), 1, bin); // gravando os registros
+    size = fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += fwrite(&reg->data, sizeof(reg->data), 1, bin);
     size += fwrite(&reg->cidade, sizeof(reg->cidade), 1, bin);
     size += fwrite(&reg->nomeEscola, sizeof(reg->nomeEscola), 1, bin);
 
     return size;
-
-}*/
+}
 
 void lerRegistroTexto(TregistroDados *reg, char *buffer) {
         int start = 0, end = 0, count = 0;
@@ -154,21 +154,16 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
 
 void lerArquivoTexto(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados) {
         char buffer[1000];
-        FILE *f = fopen(csv_nome, "r"); //TODO: Passar como arg[0] o csv?
+        FILE *f = fopen(csv_nome, "r"); 
         if (f == NULL) {
-    //      memcpy(reg.status, "0", 1); //todo conferir se é zero msm
+    //      memcpy(reg.status, "0", 1); //TODO conferir se é zero msm
             printf("Falha no carregamento do arquivo\n");
             exit(-1);
-        }
-        int size = 0;
-        insertCabecalho(cabecalho);
-        //gravarCabecalhoBinario()
-        
-        printf(" size %d\n", size);
+        }        
         int i = 0;
         while(fgets(buffer, sizeof(buffer), f) != NULL) {
             lerRegistroTexto(&dados[i], buffer);
-//                 printRegistro(&dados[i]);
+        //    printRegistro(&dados[i]);
             i++;             
         }
         fclose(f);
@@ -178,7 +173,6 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
     int option;                
     //char csv[256];
     char *csv = "SCC0503012019trabalho1csv.csv"; 
-    puts("ok");
     do {
         puts("Selecione uma opção");
         puts("1 - Gravação  desses  registros de csv em  um  arquivo  de  dados de saída");
@@ -186,28 +180,33 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
         puts("3 -Permita  a  recuperação  dos  dados  de  todos  os  registros  que  satisfaçam  um  critério de  busca  determinado  pelo  usuário.");
         puts("4 -Permita a recuperação dos dados de um registro, a partir da identificação do RRN (número relativo do registro) do registro desejado pelo usuário.");
         puts("0 - para sair");
+        fflush(stdout);
         scanf("%d", &option);
         switch (option) {
             case 1:
-              //  scanf("%s", &csv);
-    
-                lerArquivoTexto(csv, cabecalho, dados);
-                menu(dados, cabecalho);
+                lerArquivoTexto(csv, cabecalho, dados); // lê do csv para struct
+ 
+                FILE *bin = fopen("arquivo.bin", "wb"); //lê da struct e passa para arquivo binário
+                if(bin == NULL) {
+                    printf("Falha no carregamento do arquivo");
+                    exit(-1);
+                }
+                int size = 0, i = 0;
+                while (size <= 16000) {
+                    size += gravarDadosBinario(&dados[i], bin);
+                    i++;
+                }
+                printf("size: %d", size);
+                
                 break;
             case 2:
                 //insertCabecalho(&cabecalho);
-    /*            FILE *bin = fopen("arquivo.bin", "wb");
-                if(bin == NULL) {
-                printf("Falha no carregamento do arquivo");
-                    return -1;
-                }
-                int size = 0;
-                size = gravarCabecalhoBinario(&cabecalho, bin);
+    
+/*                // int size = 0;
+                // size = gravarCabecalhoBinario(&cabecalho, bin);
                 
                 size = 0;
-                while (size <= 16000) {
-                    gravarDadosBinario(&dados[i], bin);
-                }*/
+                */
                 break;
             case 3:
                 
@@ -225,8 +224,8 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
 int main () { 
 //    char paginaDisco[16000];
     TregistroCabecalho cabecalho;
-    TregistroDados dados[1000]; //
-    puts("ok");
+    TregistroDados dados[10000]; 
+  
     menu(dados, &cabecalho);
     
     return 0;
