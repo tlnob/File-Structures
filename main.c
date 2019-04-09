@@ -15,7 +15,7 @@
 
 
 
-/*void printCabecalho(TregistroCabecalho *cabecalho) {
+void printCabecalho(TregistroCabecalho *cabecalho) {
     printf("\n status: %s\n", cabecalho->status);
     printf("\n TOPO: %d  \n", cabecalho->topoPilha);
     printf("\n Tag campo 1: %s \n", cabecalho->tagCampo1);
@@ -59,7 +59,7 @@ void insertCabecalho(TregistroCabecalho *cabecalho) {
     strcpy(cabecalho->desCampo5, charcampo5);
 
 }
-*/
+
 
 /*
 int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
@@ -86,7 +86,8 @@ void printRegistro(TregistroDados *reg) {
     int end = snprintf(buffer, sizeof(buffer), "%d", reg->nroInscricao);
     int bufferSize = sizeof(buffer);
     if(reg->nota != -1) {
-        end += snprintf(&buffer[end], bufferSize-end, " %.1lf ", reg->nota);    
+        end += snprintf(&buffer[end], bufferSize-end, " %.1lf", reg->nota);
+
         //TODO: tratar null e checar end
     }
     if(reg->data[0] != '\0') { // tem alguma data (nulo é \0@@@)
@@ -94,34 +95,59 @@ void printRegistro(TregistroDados *reg) {
         memcpy(&buffer[end], reg->data, sizeof(reg->data)); //end está na posição que a data deve ser gravada
         end += sizeof(reg->data); //pega  posição até o registro.nota com o end, para entar usar o memcpy e armazenar o restante, pois a dat possui apenas 10 char
     }
-    if(reg->nomeEscola) {
+    if(reg->cidade) {
+        end += snprintf(&buffer[end], bufferSize-end, " %d", reg->tamanho_cidade);
         end += snprintf(&buffer[end], bufferSize-end, " %s", reg->cidade);
         //TODO: tratar null e checar end
     }
     if(reg->nomeEscola) {
+        end += snprintf(&buffer[end], bufferSize-end, " %d", reg->tamanho_nomeEscola);
         end += snprintf(&buffer[end], bufferSize-end, " %s", reg->nomeEscola);
         //TODO: tratar null e checar end
     }
     buffer[end] = '\0';
     printf("%s\n", buffer);
+ 
 }
 
 
 int gravarDadosBinario(TregistroDados *reg, FILE *bin) {
     int size = 0;
-    size = fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
-    size += fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
-    size += fwrite(&reg->data, sizeof(reg->data), 1, bin);
-    if(&reg->cidade && &reg->tamanho_cidade) {
-        printf("reg-cidade: %s -- ", reg->cidade);
-        size += fwrite(&reg->cidade, sizeof(reg->cidade), 1, bin);
-        size += fwrite(&reg->tamanho_cidade, sizeof(reg->tamanho_cidade), 1, bin);
-    } 
-    if(&reg->nomeEscola && reg->tamanho_nomeEscola) {
-        size += fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
-    } 
-
+    size = sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
+    size += sizeof(double)    * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
+    size += sizeof(reg->data) * fwrite(&reg->data, sizeof(reg->data), 1, bin);
+    
+    if(reg->tamanho_cidade != 0) {
+        size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(reg->tamanho_cidade), 1, bin);
+        size += reg->tamanho_cidade * fwrite(reg->cidade, reg->tamanho_cidade, 1, bin);
+    }
+    if(reg->tamanho_nomeEscola) {
+        size += sizeof(int) * fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
+        size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola, 1, bin);
+    }
+    while (size++ < 80) { // preenche com @ até size==80
+        fputc('@', bin);
+    }
+    printf("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
+        reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
     return size;
+}
+
+int alocarCamposVariaveis(char *tok, char **campo) {
+    int len = strlen(tok);
+        //erro de alocação
+    if(len > 0) { //se não for campo nulo
+        *campo = malloc(len+1); //aloca cidade
+        if(*campo == NULL) {
+            puts("erro");
+            exit(-1);
+        }
+        strcpy(*campo, tok); //copia registro - irá para as primeiras posições    
+        return len;
+    } else {
+        *campo = NULL;
+        return 0;
+    }
 }
 
 void lerRegistroTexto(TregistroDados *reg, char *buffer) {
@@ -132,39 +158,23 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
                 char field[80]; //string temporária
                 buffer[end] = '\0';
                 tok = &buffer[start];
-                int isNull = (start == end);
+                int isNull = (start == end); //nulo se o star for igual ao end, ou seja,não andou nenhum char a mais
                 if (count == 0) reg->nroInscricao = atoi(tok);    
                 else if(count == 1) reg->nota = isNull ? -1 : atof(tok);  // se é nulo -1, se não transforma para double
-                else if(count == 2){
+                else if(count == 2) {
                     if(isNull) {
                         memcpy(reg->data, "\0@@@@@@@@@", 10); //preenche campos varios com @
                     } else {
-                        memcpy(reg->data, tok, 10); //data[10] nao dá espaço para o \0
+                        memcpy(reg->data, tok, 10); //data[10] nao dá espaço para o \0, portanto não é possível usar strcpy
                     }
                 } 
                 /*Para os campos de tamanho variável, os valores nulos devem ser representados da seguinte forma:o
                 não  devem  ser  armazenados  os  campos  referentes:  
                 (ii) TODO: à tag que representa o dado;*/
-                else if(count == 3) {
-                    reg->cidade = malloc(strlen(tok)+1); //aloca cidade
-                    if(!reg->cidade) puts("erro"); //erro de alocação
-                    if(strlen(tok) > 0) { //se não for campo nulo
-                        reg->tamanho_cidade = strlen(tok);
-                        strcpy(reg->cidade, tok); //copia registro - irá para as primeiras posições    
-                    }
-  //                printf("cidade: %s \n", reg->cidade);
-                } 
-                else if(count == 4) {
-                    reg->nomeEscola = malloc(strlen(tok)+1); //aloca cidade
-                    if(!reg->nomeEscola) puts("erro"); //erro de alocação
-                    reg->tamanho_nomeEscola = strlen(tok); // define tamanho cidade
-                    if(strlen(tok) > 0) { // se não for campo nulo
-                        strcpy(reg->nomeEscola, tok); //copia registro - irá para as primeiras posições    
-                    } else {
-                        free(reg->nomeEscola);
-                        free(reg->tamanho_nomeEscola);
-                    }
-                }
+                else if(count == 3) reg->tamanho_cidade = alocarCamposVariaveis(tok, &reg->cidade);
+                else if(count == 4) reg->tamanho_nomeEscola = alocarCamposVariaveis(tok, &reg->nomeEscola);
+                
+                
                 count++;    
                 start = end + 1;
             }
@@ -172,28 +182,74 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
 }
 
 
-void lerArquivoTexto(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados) {
+FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) {
         char buffer[1000];
         FILE *f = fopen(csv_nome, "r"); 
+        int size = 0, i = 0;
         if (f == NULL) {
     //      memcpy(reg.status, "0", 1); //TODO conferir se é zero msm
             printf("Falha no carregamento do arquivo\n");
             exit(-1);
         }        
-        int i = 0;
+        FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
+        if(bin == NULL) {
+            printf("Falha no carregamento do arquivo");
+            exit(-1);
+        }
+        fgets(buffer, sizeof(buffer), f); //le a primeira linha com indices
         while(fgets(buffer, sizeof(buffer), f) != NULL) {
             lerRegistroTexto(&dados[i], buffer);
-        //    printRegistro(&dados[i]);
-            i++;             
+            size += gravarDadosBinario(&dados[i], bin);
+       //    printRegistro(&dados[i]);
+            i++;
         }
+        printf("total size: %d\n", size);
         fclose(f);
+        fclose(bin);
+        return bin;
+}
+
+int binarioParaTexto(char filein[]) {
+    TregistroDados reg;
+    reg.cidade = malloc(sizeof(char)*55);
+    reg.nomeEscola = malloc(sizeof(char)*55);
+    FILE* fin = fopen(filein, "rb");
+    char buffer[16000];
+    int i = 0;
+    if(fin == NULL) exit(-1);
+    puts("ok");
+    while(fread(buffer, sizeof(buffer), 1, fin)) {
+        memcpy(&reg.nroInscricao, buffer, sizeof(int));
+        memcpy(&reg.nota, &buffer[4], sizeof(double));
+        memcpy(&reg.data, &buffer[12], sizeof(char)*10);
+        if(buffer[22] != '@') {
+            memcpy(&reg.tamanho_cidade, &buffer[22], sizeof(int));
+            memcpy(reg.cidade, &buffer[26], reg.tamanho_cidade);
+            reg.cidade[reg.tamanho_cidade] = '\0';
+        }
+        if(buffer[26+reg.tamanho_cidade] != '@') {
+            memcpy(&reg.tamanho_nomeEscola, &buffer[26+reg.tamanho_cidade], sizeof(int));
+            memcpy(reg.nomeEscola, &buffer[26+reg.tamanho_cidade+4], reg.tamanho_nomeEscola);
+            reg.nomeEscola[reg.tamanho_nomeEscola] = '\0';
+        }
+      //  printf("tam: %s\n", reg.nomeEscola);
+        printRegistro(&reg);
+        i++;
+    }
+    free(reg.cidade);
+    free(reg.nomeEscola);
+    fclose(fin);
+    return i;
 }
 
 void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
     int option;                
     //char csv[256];
     char *csv = "SCC0503012019trabalho1csv.csv"; 
-    do {
+    //csv = "teste.csv";
+    char *bin = "arquivo.bin";
+    int size = 0;
+    do {    
         puts("Selecione uma opção");
         puts("1 - Gravação  desses  registros de csv em  um  arquivo  de  dados de saída");
         puts("2 - Permita a recuperação dos dados, de todos os registros");
@@ -204,29 +260,14 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
         scanf(" %d", &option); //TODO: passar o csv para ser lido aqui
         switch (option) {
             case 1:
-                lerArquivoTexto(csv, cabecalho, dados); // lê do csv para struct
- 
-                FILE *bin = fopen("arquivo.bin", "wb"); //lê da struct e passa para arquivo binário
-                if(bin == NULL) {
-                    printf("Falha no carregamento do arquivo");
-                    exit(-1);
-                }
-                int size = 0, i = 0;
-                while (size <= 16000) { //TODO : 16000 fix
-                    size += gravarDadosBinario(&dados[i], bin);
-                    i++;
-                }
-                printf("size: %d", size);
-                
+                lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
                 break;
             case 2:
+                size = binarioParaTexto(bin);
+                printf("Número de páginas de disco acessadas: %d\n", size);
                 //insertCabecalho(&cabecalho);
-    
-/*                // int size = 0;
+                // int size = 0;
                 // size = gravarCabecalhoBinario(&cabecalho, bin);
-                
-                size = 0;
-                */
                 break;
             case 3:
                 
@@ -236,7 +277,7 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
             default:
                 break;
         }
-    } while (option=0);
+    } while (option != 0);
     
 
 }
