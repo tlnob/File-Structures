@@ -111,7 +111,7 @@ void printRegistro(TregistroDados *reg) {
 }
 
 
-int gravarDadosBinario(TregistroDados *reg, FILE *bin) {
+int gravarDadosBinario(TregistroDados *reg, FILE *bin) { //OK
     int size = 0;
     size = sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += sizeof(double)    * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
@@ -121,19 +121,20 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin) {
         size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(reg->tamanho_cidade), 1, bin);
         size += reg->tamanho_cidade * fwrite(reg->cidade, reg->tamanho_cidade, 1, bin);
     }
-    if(reg->tamanho_nomeEscola) {
-        size += sizeof(int) * fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
+    if(reg->tamanho_nomeEscola != 0) {
+        size += sizeof(int)             * fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
         size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola, 1, bin);
     }
-    while (size++ < 80) { // preenche com @ até size==80
+    while (size < 80) { // preenche com @ até size==80
         fputc('@', bin);
+        size++;
     }
     printf("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
         reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
     return size;
 }
 
-int alocarCamposVariaveis(char *tok, char **campo) {
+int alocarCamposVariaveis(char *tok, char **campo) { //OK
     int len = strlen(tok);
         //erro de alocação
     if(len > 0) { //se não for campo nulo
@@ -150,7 +151,7 @@ int alocarCamposVariaveis(char *tok, char **campo) {
     }
 }
 
-void lerRegistroTexto(TregistroDados *reg, char *buffer) {
+void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
         int start = 0, end = 0, count = 0;
         char *tok;
         for(end = start; buffer[end] != '\0'; ++end) {
@@ -182,7 +183,7 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) {
 }
 
 
-FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) {
+FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) { //OK
         char buffer[1000];
         FILE *f = fopen(csv_nome, "r"); 
         int size = 0, i = 0;
@@ -200,7 +201,7 @@ FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho
         while(fgets(buffer, sizeof(buffer), f) != NULL) {
             lerRegistroTexto(&dados[i], buffer);
             size += gravarDadosBinario(&dados[i], bin);
-       //    printRegistro(&dados[i]);
+    //      printRegistro(&dados[i]);
             i++;
         }
         printf("total size: %d\n", size);
@@ -209,16 +210,16 @@ FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho
         return bin;
 }
 
-int binarioParaTexto(char filein[]) {
+int binarioParaTexto(char filein[]) { //OK
     TregistroDados reg;
     reg.cidade = malloc(sizeof(char)*55);
     reg.nomeEscola = malloc(sizeof(char)*55);
     FILE* fin = fopen(filein, "rb");
-    char buffer[16000];
+    FILE* fout = fopen("binaryToText.txt", "w");
+    char buffer[80];
     int i = 0;
     if(fin == NULL) exit(-1);
-    puts("ok");
-    while(fread(buffer, sizeof(buffer), 1, fin)) {
+    while(fread(buffer, 80, 1, fin)) {
         memcpy(&reg.nroInscricao, buffer, sizeof(int));
         memcpy(&reg.nota, &buffer[4], sizeof(double));
         memcpy(&reg.data, &buffer[12], sizeof(char)*10);
@@ -232,22 +233,28 @@ int binarioParaTexto(char filein[]) {
             memcpy(reg.nomeEscola, &buffer[26+reg.tamanho_cidade+4], reg.tamanho_nomeEscola);
             reg.nomeEscola[reg.tamanho_nomeEscola] = '\0';
         }
-      //  printf("tam: %s\n", reg.nomeEscola);
-        printRegistro(&reg);
         i++;
+        printRegistro(&reg); 
     }
+    
     free(reg.cidade);
     free(reg.nomeEscola);
     fclose(fin);
-    return i;
+    return (i*80)/16000; //16000 é o tam da página de disco e divide o numero de bytes de cada registro vezes o número de registros
+}
+
+ void buscaCampo(char *nomeCampo,TregistroDados *reg, char *fin) {
+
 }
 
 void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
     int option;                
     //char csv[256];
     char *csv = "SCC0503012019trabalho1csv.csv"; 
+    char buffer[80];
     //csv = "teste.csv";
     char *bin = "arquivo.bin";
+    char *campoDados;
     int size = 0;
     do {    
         puts("Selecione uma opção");
@@ -264,13 +271,14 @@ void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
                 break;
             case 2:
                 size = binarioParaTexto(bin);
-                printf("Número de páginas de disco acessadas: %d\n", size);
+                printf("Número de páginas de disco acessadas: %d\n", size); 
                 //insertCabecalho(&cabecalho);
                 // int size = 0;
                 // size = gravarCabecalhoBinario(&cabecalho, bin);
                 break;
             case 3:
                 
+       //         buscaCampo(campoDados, dados, bin);
                 break;
             case 4:
                 break;
