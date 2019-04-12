@@ -209,12 +209,8 @@ FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho
         return bin;
 }
 
-int copiaDadosparaStruct(TregistroDados *reg, char *filein) {
+/*int copiaDadosparaStruct(TregistroDados *reg, char *filein, char buffer[]) {// TODO: REtornar algun int com paginas de disco
     int i = 0;
-    FILE* fin = fopen(filein, "rb");
-    if(fin == NULL) exit(-1);
-    char buffer[80];
-    while(fread(buffer, 80, 1, fin)) {
         memcpy(&reg->nroInscricao, buffer, sizeof(int));
         memcpy(&reg->nota, &buffer[4], sizeof(double));
         memcpy(&reg->data, &buffer[12], sizeof(char)*10);
@@ -230,79 +226,131 @@ int copiaDadosparaStruct(TregistroDados *reg, char *filein) {
         }
         printRegistro(reg); 
         i++;
-    }
-        fclose(fin);
         return (i*80)/16000; //16000 é o tam da página de disco e divide o numero de bytes de cada registro vezes o número de registros
-}
+}*/
 
-TregistroDados* binarioParaTexto(char filein[], TregistroDados *reg) { //OK
+TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
+    int size = 0, i = 0;
+
     reg->cidade = malloc(sizeof(char)*55);
     reg->nomeEscola = malloc(sizeof(char)*55);
-    
-    copiaDadosparaStruct(reg, filein);
-    
-    //free(reg->cidade);
-    //free(reg->nomeEscola);
-    
+
+    memcpy(&reg->nroInscricao, buffer, sizeof(int));
+    memcpy(&reg->nota, &buffer[4], sizeof(double));
+    memcpy(&reg->data, &buffer[12], sizeof(char)*10);
+    if(buffer[22] != '@') {
+        memcpy(&reg->tamanho_cidade, &buffer[22], sizeof(int));
+        memcpy(reg->cidade, &buffer[26], reg->tamanho_cidade);
+        reg->cidade[reg->tamanho_cidade] = '\0';
+    }
+    if(buffer[26+reg->tamanho_cidade] != '@') {
+        memcpy(&reg->tamanho_nomeEscola, &buffer[26+reg->tamanho_cidade], sizeof(int));
+        memcpy(reg->nomeEscola, &buffer[26+reg->tamanho_cidade+4], reg->tamanho_nomeEscola);
+        reg->nomeEscola[reg->tamanho_nomeEscola] = '\0';
+    }
+
+
     return reg; 
 }
 
-
  void buscaCampo(char *filein, TregistroDados *reg, char *campo, char *valor_campo) {
     FILE *fin = fopen(filein, "rb");
-    if(fin == NULL) exit(-1);
-    char buffer[80];
-    int i = 0;
-    puts(valor_campo);
-    printf("nuuum: %d\n", &reg[0].nroInscricao);
-    while(fread(buffer, 80, 1, fin)) {
-    /*    printRegistro(reg);         
-        if(campo == "nroInscricao") {
-            fseek(fin, 4, SEEK_SET);
-            
-            if(reg->nroInscricao == atoi(valor_campo)) {
-              
-                puts("hi");
-                
-            }
-        }*/
+    if(fin == NULL) {
+        puts("erro file\n");
+        exit(-1);
     }
+    char buffer[80];
+    int i = 0, has_value = 0;
+    int nro;
+    double nota;
     
+    while(fread(buffer, 80, 1, fin)) {
+        binarioParaTexto(buffer, &reg[i]);
+        if(campo == "nroInscricao") {
+            nro = atoi(valor_campo);
+            //printf("nrooo %d\n", );
+            if(nro == reg[i].nroInscricao) {
+                printRegistro(&reg[i]);
+            } 
+        } else if(campo == "nota") {
+            nota = atof(valor_campo);
+            if(nro == reg[i].nota) {
+                printRegistro(&reg[i]);
+            }
+        } else if(campo == "data") {//reg->data[0] != ' ' && 
+            if(strcmp(valor_campo, reg[i].data) == 0) {
+                printRegistro(&reg[i]);
+            }
+        } else if(campo == "cidade") {
+            if(reg[i].tamanho_cidade != 0 && strcmp(valor_campo, reg[i].cidade) == 0) {
+                printRegistro(&reg[i]);
+            }
+        } else if (campo == "nomeEscola") {
+            if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
+                printRegistro(&reg[i]);
+            }
+        } else {
+            puts("Campo inexistente");
+            exit(-1);
+        }
+        free(reg->cidade);
+        free(reg->nomeEscola);
+        i++;
+    }
+    printf("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
     fclose(fin);
+}
+
+TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
+        char buff[80];
+        FILE *fin = fopen(fileIn, "rb");
+        int i = 0;
+        if(fin == NULL) exit(-1);
+        while(fread(buff, 80, 1, fin)) {
+            binarioParaTexto(buff, &dados[i]);
+            printRegistro(&dados[i]);
+            free(dados->cidade);
+            free(dados->nomeEscola);
+            i++;
+        }
+        fclose(fin);         
+        printf("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
+        return dados;
 }
 
 void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
     int option;                
     //char csv[256];
     char *csv = "SCC0503012019trabalho1csv.csv"; 
-    char buffer[80];
-    //csv = "teste.csv";
+    char buffer[80], buff[80];
+    csv = "teste.csv";
     char *bin = "arquivo.bin";
     char *campoDados;
-    int size = 0;
-    TregistroDados *dados2;
+    int size = 0, i = 0;
+    FILE* fin;
     do {    
-        puts("Selecione uma opção");
+        puts("--------------------------------------------------------------------");
         puts("1 - Gravação  desses  registros de csv em  um  arquivo  de  dados de saída");
         puts("2 - Permita a recuperação dos dados, de todos os registros");
         puts("3 -Permita  a  recuperação  dos  dados  de  todos  os  registros  que  satisfaçam  um  critério de  busca  determinado  pelo  usuário.");
         puts("4 -Permita a recuperação dos dados de um registro, a partir da identificação do RRN (número relativo do registro) do registro desejado pelo usuário.");
         puts("0 - para sair");
+        puts("--------------------------------------------------------------------");
         fflush(stdout);
         scanf(" %d", &option); //TODO: passar o csv para ser lido aqui
         switch (option) {
             case 1:
                 lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
                 break;
-            case 2: //TODO: segunda vez q roda o 2 dá seg fault
-                dados2 = binarioParaTexto(bin, dados);
-                printf("Número de páginas de disco acessadas: %d\n", copiaDadosparaStruct(dados, bin)); 
+            case 2:
+               // TregistroDados *dados2 = malloc(sizeof(TregistroCabecalho)); 
+                dados = iteradorBinarioTexto(dados, bin); //TODO: CHANGE NAME--its terrible
                 //insertCabecalho(&cabecalho);
                 // int size = 0;
                 // size = gravarCabecalhoBinario(&cabecalho, bin);
                 break;
             case 3:
-                buscaCampo(bin, dados2, "nroInscricao", "298");
+                buscaCampo(bin, dados, "nomeEscola", "ADEMAR HIROSHI SUDA PROF");
                 break;
             case 4:
                 break;
