@@ -1,19 +1,9 @@
 //7163822 Thais Lima de Oliveira Nobre
+//http://wiki.icmc.usp.br/images/c/c8/SCC0503012019trabalho1.pdf
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "struct.h"
-
-//http://wiki.icmc.usp.br/images/c/c8/SCC0503012019trabalho1.pdf
-
-/*Deve  ser  feita  a  diferenciação  entre  o  espaço  utilizado  e  o  lixo.  Para  tanto, todas  as stringsdevem  ser  finalizadas  com  ‘\0’  e  o  lixo  deve  ser  identificado pelo  caractere  ‘@’.Ou  seja,  quando  sobra-se  espaço  no  final  do  registro,  o registro deve ser completado com lixo até o seu final.*/
-//O campo nroInscricaonão aceita valores repetidos e nem valores nulos. •Os  campos nota, data, cidadee nomeEscolaaceitam  valores  repetidos  e valores nulos.
-//CAMPOS NULOS:
-//campos de tam fixo: \0@@@@@@@@@ ou inteiro -1
-//variavel: não  devem  ser  armazenados  os  campos  referentes:  (i)ao  indicador  de tamanho; (ii)à tagque representa o dado;e (iii) ao valor do dado.
-//(i) removidodeve  ser  inicializado  com  o  valor ‘-’;  e  (ii) encadeamentodeve ser inicializado com o valor -1. 
-
-
 
 void printCabecalho(TregistroCabecalho *cabecalho) {
     printf("\n status: %s\n", cabecalho->status);
@@ -60,12 +50,10 @@ void insertCabecalho(TregistroCabecalho *cabecalho) {
 
 }
 
-
-/*
 int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
     int size = 0;
     
-    size =  fwrite(&cabecalho->status, sizeof(cabecalho->status), 1, bin); // gravando primeiro o cabeçalho
+    size =  fwrite(&cabecalho->status,    sizeof(cabecalho->status), 1, bin); // gravando primeiro o cabeçalho
     size += fwrite(&cabecalho->topoPilha, sizeof(cabecalho->topoPilha), 1, bin);
     size += fwrite(&cabecalho->tagCampo1, sizeof(cabecalho->tagCampo1), 1, bin);
     size += fwrite(&cabecalho->desCampo1, sizeof(cabecalho->desCampo1), 1, bin);
@@ -79,7 +67,7 @@ int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
     size += fwrite(&cabecalho->desCampo5, sizeof(cabecalho->desCampo5), 1, bin);
 
     return size;
-}*/
+}
 
 void printRegistro(TregistroDados *reg) {
     char buffer[1000];
@@ -133,12 +121,9 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin) { //OK
         reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
     return size;
 }
-// else if(count == 3) reg->tamanho_cidade =
-//  alocarCamposVariaveis(tok, &reg->cidade);
 
 int alocarCamposVariaveis(char *tok, char **campo) { //OK
     int len = strlen(tok);
-        //erro de alocação
     if(len > 0) { //se não for campo nulo
         *campo = malloc(len+1); //aloca cidade
         if(*campo == NULL) exit(-1);
@@ -174,13 +159,11 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
             else if(count == 3) reg->tamanho_cidade = alocarCamposVariaveis(tok, &reg->cidade);
             else if(count == 4) reg->tamanho_nomeEscola = alocarCamposVariaveis(tok, &reg->nomeEscola);
             
-            
             count++;    
             start = end + 1;
         }
     }
 }
-
 
 FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) { //OK
         char buffer[1000];
@@ -209,26 +192,6 @@ FILE* lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho
         return bin;
 }
 
-/*int copiaDadosparaStruct(TregistroDados *reg, char *filein, char buffer[]) {// TODO: REtornar algun int com paginas de disco
-    int i = 0;
-        memcpy(&reg->nroInscricao, buffer, sizeof(int));
-        memcpy(&reg->nota, &buffer[4], sizeof(double));
-        memcpy(&reg->data, &buffer[12], sizeof(char)*10);
-        if(buffer[22] != '@') {
-            memcpy(&reg->tamanho_cidade, &buffer[22], sizeof(int));
-            memcpy(reg->cidade, &buffer[26], reg->tamanho_cidade);
-            reg->cidade[reg->tamanho_cidade] = '\0';
-        }
-        if(buffer[26+reg->tamanho_cidade] != '@') {
-            memcpy(&reg->tamanho_nomeEscola, &buffer[26+reg->tamanho_cidade], sizeof(int));
-            memcpy(reg->nomeEscola, &buffer[26+reg->tamanho_cidade+4], reg->tamanho_nomeEscola);
-            reg->nomeEscola[reg->tamanho_nomeEscola] = '\0';
-        }
-        printRegistro(reg); 
-        i++;
-        return (i*80)/16000; //16000 é o tam da página de disco e divide o numero de bytes de cada registro vezes o número de registros
-}*/
-
 TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
     int size = 0, i = 0;
 
@@ -248,8 +211,6 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
         memcpy(reg->nomeEscola, &buffer[26+reg->tamanho_cidade+4], reg->tamanho_nomeEscola);
         reg->nomeEscola[reg->tamanho_nomeEscola] = '\0';
     }
-
-
     return reg; 
 }
 
@@ -268,16 +229,16 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
         binarioParaTexto(buffer, &reg[i]);
         if(campo == "nroInscricao") {
             nro = atoi(valor_campo);
-            //printf("nrooo %d\n", );
             if(nro == reg[i].nroInscricao) {
                 printRegistro(&reg[i]);
+                break; //id único, não há necessidade de procurar mais
             } 
         } else if(campo == "nota") {
             nota = atof(valor_campo);
             if(nro == reg[i].nota) {
                 printRegistro(&reg[i]);
             }
-        } else if(campo == "data") {//reg->data[0] != ' ' && 
+        } else if(campo == "data") {
             if(strcmp(valor_campo, reg[i].data) == 0) {
                 printRegistro(&reg[i]);
             }
@@ -305,9 +266,21 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         char buff[80];
         FILE *fin = fopen(fileIn, "rb");
         int i = 0;
-        if(fin == NULL) exit(-1);
+        TregistroDados *dados1;
+
+        if(fin == NULL) {
+            printf("Falha no processamento do arquivo.");
+            exit(-1);
+        }
+        /*int seek = fseek(fin, 0, SEEK_END);
+        //printf("seek: %d\n", seek);
+        printf("offset: %d\n", ftell(fin));
+        if(ftell(fin) == 0) {
+            printf("Registro inexistente.");
+            exit(-1);
+        }  TODO tratar arquivos vazios */
         while(fread(buff, 80, 1, fin)) {
-            binarioParaTexto(buff, &dados[i]);
+            dados1 = binarioParaTexto(buff, &dados[i]);
             printRegistro(&dados[i]);
             free(dados->cidade);
             free(dados->nomeEscola);
@@ -318,56 +291,45 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         return dados;
 }
 
-void menu (TregistroDados *dados, TregistroCabecalho *cabecalho) {
-    int option;                
-    //char csv[256];
+int main () { 
+    TregistroCabecalho *cabecalho;
+    TregistroDados dados[10000]; 
+  
+    char option[4], *file;                
     char *csv = "SCC0503012019trabalho1csv.csv"; 
     char buffer[80], buff[80];
-    csv = "teste.csv";
+    //csv = "teste.csv";
     char *bin = "arquivo.bin";
+    int nro;    
+    
     char *campoDados;
     int size = 0, i = 0;
     FILE* fin;
-    do {    
-        puts("--------------------------------------------------------------------");
-        puts("1 - Gravação  desses  registros de csv em  um  arquivo  de  dados de saída");
-        puts("2 - Permita a recuperação dos dados, de todos os registros");
-        puts("3 -Permita  a  recuperação  dos  dados  de  todos  os  registros  que  satisfaçam  um  critério de  busca  determinado  pelo  usuário.");
-        puts("4 -Permita a recuperação dos dados de um registro, a partir da identificação do RRN (número relativo do registro) do registro desejado pelo usuário.");
-        puts("0 - para sair");
-        puts("--------------------------------------------------------------------");
-        fflush(stdout);
-        scanf(" %d", &option); //TODO: passar o csv para ser lido aqui
-        switch (option) {
-            case 1:
-                lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
-                break;
-            case 2:
-               // TregistroDados *dados2 = malloc(sizeof(TregistroCabecalho)); 
-                dados = iteradorBinarioTexto(dados, bin); //TODO: CHANGE NAME--its terrible
-                //insertCabecalho(&cabecalho);
-                // int size = 0;
-                // size = gravarCabecalhoBinario(&cabecalho, bin);
-                break;
-            case 3:
-                buscaCampo(bin, dados, "nomeEscola", "ADEMAR HIROSHI SUDA PROF");
-                break;
-            case 4:
-                break;
-            default:
-                break;
+    fflush(stdout);
+    scanf("%[^\n]", option); //TODO: passar o csv para ser lido aqui
+
+
+ 
+    char *tok = strtok(option, " ");
+    nro = atoi(tok); //primeiro valor antes de espaco "1 "
+    if(nro == 1) {
+            tok = strtok(0, " ");
+            csv = tok;
+            csv = "SCC0503012019trabalho1csv.csv"; 
+//          printf("tok: %s\n", tok);  
+            lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct   
         }
-    } while (option != 0);
-    
+    else if(nro == 2) { //funcionalidade 2
+        tok = strtok(0, " ");
+        printf("tok: %s\n", tok);  
+        iteradorBinarioTexto(dados, tok);
+    } else if(nro == 3){ //funcionalidade 3 
+        // buscaCampo(bin, dados, "nroInscricao", "9908"); TODO: testar
+    } else if(nro == 4){ //funcionalidade 4 
 
-}
+    }
 
-int main () { 
-//    char paginaDisco[16000];
-    TregistroCabecalho cabecalho;
-    TregistroDados dados[10000]; 
-  
-    menu(dados, &cabecalho);
+
     
     return 0;
 }
