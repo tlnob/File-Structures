@@ -124,7 +124,6 @@ void printRegistro(TregistroDados *reg) {
  
 }
 
-
 int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
     
     memcpy(reg->removido, "-", 1);
@@ -199,7 +198,7 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
 }
 
 void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) { //OK
-        char buffer[1000];
+        char buffer[80];
         FILE *csv_file = fopen(csv_nome, "r"); 
         int size = 0, i = 0;
         if (csv_file == NULL) {
@@ -212,7 +211,6 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
             debug("Falha no carregamento do arquivo");
             exit(0);
         }
-        char buff[284];
         insertCabecalho(cabecalho);
         size = gravarCabecalhoBinario(bin, cabecalho);
         fgets(buffer, sizeof(buffer), csv_file); //le a primeira linha com indices
@@ -366,8 +364,5 @@ int main () {
     } else if(nro == 4){ //funcionalidade 4 
 
     }
-
-
-    
     return 0;
 }
