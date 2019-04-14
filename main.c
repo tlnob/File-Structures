@@ -87,7 +87,7 @@ int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
     size +=               fwrite(&cabecalho->tagCampo5, sizeof(cabecalho->tagCampo5), 1, bin);
     size += 55 *          fwrite(&cabecalho->desCampo5, sizeof(cabecalho->desCampo5), 1, bin);
     
-    while (size < 16000) { // preenche com @ até size==80
+    while (size < 16000) { // preenche com @ 
         fputc('@', bin);
         size++;
     }
@@ -120,29 +120,27 @@ void printRegistro(TregistroDados *reg) {
         //TODO: tratar null e checar end
     }
     buffer[end] = '\0';
-    debug("%s\n", buffer);
+    printf("%s\n", buffer);
  
 }
 
 int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
-    
-    memcpy(reg->removido, "-", 1);
-   // reg->encadeamento = -1;
-            
-    size = sizeof(char)       * fwrite(&reg->removido, sizeof(1), 1, bin);
-   // size = sizeof(int)        * fwrite(&reg->encadeamento, sizeof(int), 1, bin);
+                
+    size = sizeof(char)       * fwrite(&reg->removido, sizeof(char), 1, bin);
+    size = sizeof(int)        * fwrite(&reg->encadeamento, sizeof(int), 1, bin);
     size = sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += sizeof(double)    * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += sizeof(reg->data) * fwrite(&reg->data, sizeof(reg->data), 1, bin);
     
     if(reg->tamanho_cidade != 0) {
-        size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(reg->tamanho_cidade), 1, bin);
+        size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(int), 1, bin);
         size += reg->tamanho_cidade * fwrite(reg->cidade, reg->tamanho_cidade, 1, bin);
-    }
+    } 
     if(reg->tamanho_nomeEscola != 0) {
-        size += sizeof(int)             * fwrite(&reg->tamanho_nomeEscola, sizeof(reg->tamanho_nomeEscola), 1, bin);
+        size += sizeof(int)             * fwrite(&reg->tamanho_nomeEscola, sizeof(int), 1, bin);
         size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola, 1, bin);
     }
+    
     while (size < 80) { // preenche com @ até size==80
         fputc('@', bin);
         size++;
@@ -174,8 +172,8 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
             buffer[end] = '\0';
             tok = &buffer[start];
             int isNull = (start == end); //nulo se o star for igual ao end, ou seja,não andou nenhum char a mais
-            //memcpy(reg->removido, "-", 1);
-            //reg->encadeamento = -1;
+            memcpy(reg->removido, "-", 1);
+            reg->encadeamento = -1;
             if (count == 0) reg->nroInscricao = atoi(tok);    
             else if(count == 1) reg->nota = isNull ? -1 : atof(tok);  // se é nulo -1, se não transforma para double
             else if(count == 2) {
@@ -203,12 +201,12 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         int size = 0, i = 0;
         if (csv_file == NULL) {
     //      memcpy(reg.status, "0", 1); //TODO conferir se é zero msm
-            debug("Falha no carregamento do arquivo\n");
+            printf("Falha no carregamento do arquivo\n");
             exit(0);
         }        
         FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
         if(bin == NULL) {
-            debug("Falha no carregamento do arquivo");
+            printf("Falha no carregamento do arquivo");
             exit(0);
         }
         insertCabecalho(cabecalho);
@@ -217,7 +215,7 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         while(fgets(buffer, sizeof(buffer), csv_file) != NULL) {
             lerRegistroTexto(&dados[i], buffer);
             size += gravarDadosBinario(&dados[i], bin, size);
-    //      printRegistro(&dados[i]);
+            printRegistro(&dados[i]);
             i++;
         }
         debug("total size: %d\n", size);
@@ -348,11 +346,11 @@ int main () {
             cabecalho = malloc(sizeof(TregistroCabecalho));
             tok = strtok(0, " ");
             csv = tok;
-            csv = "projeto_si_atualizado.csv"; 
-//          debug("tok: %s\n", tok);  
+            csv = "projeto_si_atualizado.csv";
+            debug("tok: %s\n", tok);  
             lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
             free(cabecalho);
-        }
+    }
     else if(nro == 2) { //funcionalidade 2
         tok = strtok(0, " ");
         //debug("tok: %s\n", tok);  
