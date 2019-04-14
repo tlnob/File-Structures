@@ -7,7 +7,7 @@
 #include <struct.h>
 
 #ifdef _DEBUG
-#define debug(...) fdebug(stderr, ##__VA_ARGS__)
+#define debug(...) fprintf(stderr, ##__VA_ARGS__)
 #else
 #define debug(...)
 #endif
@@ -134,19 +134,23 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
     
     if(reg->tamanho_cidade != 0) {
         size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(int), 1, bin);
-        size += reg->tamanho_cidade * fwrite(reg->cidade, reg->tamanho_cidade, 1, bin);
+        size = size +1;
+        fputc('4',bin);
+        size += reg->tamanho_cidade +1 * fwrite(reg->cidade, reg->tamanho_cidade +1, 1, bin);
     } 
     if(reg->tamanho_nomeEscola != 0) {
         size += sizeof(int)             * fwrite(&reg->tamanho_nomeEscola, sizeof(int), 1, bin);
+        size = size +1;
+        fputc('5',bin);
         size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola, 1, bin);
     }
-    
+    printf("size: %d", size);
     while (size < 80) { // preenche com @ até size==80
         fputc('@', bin);
         size++;
     }
-    //debug("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
-    //    reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
+    printf("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
+        reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
     return size;
 }
 
@@ -156,7 +160,7 @@ int alocarCamposVariaveis(char *tok, char **campo) { //OK
         *campo = malloc(len+1); //aloca cidade
         if(*campo == NULL) exit(0);
         strcpy(*campo, tok); //copia registro - irá para as primeiras posições    
-        return len;
+        return len +1; //para alocar os 2 bytes
     } else {
         *campo = NULL;
         return 0;
@@ -215,7 +219,7 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         while(fgets(buffer, sizeof(buffer), csv_file) != NULL) {
             lerRegistroTexto(&dados[i], buffer);
             size += gravarDadosBinario(&dados[i], bin, size);
-            printRegistro(&dados[i]);
+           // printRegistro(&dados[i]);
             i++;
         }
         debug("total size: %d\n", size);
