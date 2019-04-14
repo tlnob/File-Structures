@@ -1,1 +1,1 @@
-gcc -o arquivo arquivo.c && ./arquivo
+gcc -o arquivo main.c && ./arquivo

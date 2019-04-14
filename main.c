@@ -6,19 +6,25 @@
 #include <string.h>
 #include <struct.h>
 
+#ifdef _DEBUG
+#define debug(...) fdebug(stderr, ##__VA_ARGS__)
+#else
+#define debug(...)
+#endif
+
 void printCabecalho(TregistroCabecalho *cabecalho) {
-    printf("\n status: %s\n", cabecalho->status);
-    printf("\n TOPO: %d  \n", cabecalho->topoPilha);
-    printf("\n Tag campo 1: %s \n", cabecalho->tagCampo1);
-    printf("\n Desc campo 1: %s \n", cabecalho->desCampo1);
-    printf("\n T2 : %s \n", cabecalho->tagCampo2);
-    printf("\n D2: %s \n", cabecalho->desCampo2);
-    printf("\n T3: %s \n", cabecalho->tagCampo3);
-    printf("\n D3: %s \n", cabecalho->desCampo3);
-    printf("\n T4: %s \n", cabecalho->tagCampo4);
-    printf("\n D4: %s \n", cabecalho->desCampo4);
-    printf("\n T5: %s \n", cabecalho->tagCampo5);
-    printf("\n D5: %s \n", cabecalho->desCampo5);
+    debug("\n status: %s\n", cabecalho->status);
+    debug("\n TOPO: %d  \n", cabecalho->topoPilha);
+    debug("\n Tag campo 1: %s \n", cabecalho->tagCampo1);
+    debug("\n Desc campo 1: %s \n", cabecalho->desCampo1);
+    debug("\n T2 : %s \n", cabecalho->tagCampo2);
+    debug("\n D2: %s \n", cabecalho->desCampo2);
+    debug("\n T3: %s \n", cabecalho->tagCampo3);
+    debug("\n D3: %s \n", cabecalho->desCampo3);
+    debug("\n T4: %s \n", cabecalho->tagCampo4);
+    debug("\n D4: %s \n", cabecalho->desCampo4);
+    debug("\n T5: %s \n", cabecalho->tagCampo5);
+    debug("\n D5: %s \n", cabecalho->desCampo5);
 }
 
 void preencheFimDaString(char *charCampo) {
@@ -114,13 +120,18 @@ void printRegistro(TregistroDados *reg) {
         //TODO: tratar null e checar end
     }
     buffer[end] = '\0';
-    printf("%s\n", buffer);
+    debug("%s\n", buffer);
  
 }
 
 
 int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
     
+    memcpy(reg->removido, "-", 1);
+   // reg->encadeamento = -1;
+            
+    size = sizeof(char)       * fwrite(&reg->removido, sizeof(1), 1, bin);
+   // size = sizeof(int)        * fwrite(&reg->encadeamento, sizeof(int), 1, bin);
     size = sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += sizeof(double)    * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += sizeof(reg->data) * fwrite(&reg->data, sizeof(reg->data), 1, bin);
@@ -137,7 +148,7 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
         fputc('@', bin);
         size++;
     }
-    //printf("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
+    //debug("insc: %d + nota: %.2lf + data: %s + tamanho_cidade: %d, cidade: %s + tamanho_nomeEscola: %d, reg-nomeEscola: %s (size: %d)\n", 
     //    reg->nroInscricao, reg->nota, reg->data, reg->tamanho_cidade, reg->cidade, reg->tamanho_nomeEscola, reg->nomeEscola, size);
     return size;
 }
@@ -158,11 +169,14 @@ int alocarCamposVariaveis(char *tok, char **campo) { //OK
 void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
     int start = 0, end = 0, count = 0;
     char *tok;
+
     for(end = start; buffer[end] != '\0'; ++end) {
         if(buffer[end] == ',' || buffer[end] == '\n' || buffer[end] == '\r') {
             buffer[end] = '\0';
             tok = &buffer[start];
             int isNull = (start == end); //nulo se o star for igual ao end, ou seja,não andou nenhum char a mais
+            //memcpy(reg->removido, "-", 1);
+            //reg->encadeamento = -1;
             if (count == 0) reg->nroInscricao = atoi(tok);    
             else if(count == 1) reg->nota = isNull ? -1 : atof(tok);  // se é nulo -1, se não transforma para double
             else if(count == 2) {
@@ -190,12 +204,12 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         int size = 0, i = 0;
         if (csv_file == NULL) {
     //      memcpy(reg.status, "0", 1); //TODO conferir se é zero msm
-            printf("Falha no carregamento do arquivo\n");
+            debug("Falha no carregamento do arquivo\n");
             exit(0);
         }        
         FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
         if(bin == NULL) {
-            printf("Falha no carregamento do arquivo");
+            debug("Falha no carregamento do arquivo");
             exit(0);
         }
         char buff[284];
@@ -208,10 +222,10 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
     //      printRegistro(&dados[i]);
             i++;
         }
-        //printf("total size: %d\n", size);
+        debug("total size: %d\n", size);
         fclose(csv_file);
         fclose(bin);
-        printf("%s\n", bin_file);
+        debug("%s\n", bin_file);
 }
 
 TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
@@ -280,7 +294,7 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
         free(reg->nomeEscola);
         i++;
     }
-    printf("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
+    debug("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
     fclose(fin);
 }
 
@@ -291,14 +305,14 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         TregistroDados *dados1;
 
         if(fin == NULL) {
-            printf("Falha no processamento do arquivo.");
+            debug("Falha no processamento do arquivo.");
             exit(0);
         }
         int seek = fseek(fin, 0, SEEK_END);
-        //printf("seek: %d\n", seek);
-        //printf("offset: %d\n", ftell(fin));
+        //debug("seek: %d\n", seek);
+        debug("offset: %d\n", ftell(fin));
         if(ftell(fin) == 0) {
-            printf("Registro inexistente.");
+            debug("Registro inexistente.");
             exit(0);
         }//  TODO tratar arquivos vazios */
         while(fread(buff, 80, 1, fin)) {
@@ -309,7 +323,7 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
             i++;
         }
         fclose(fin);         
-        printf("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
+        debug("Número de páginas de disco acessadas: %d\n", (i*80)/16000); 
         return dados;
 }
 
@@ -337,13 +351,13 @@ int main () {
             tok = strtok(0, " ");
             csv = tok;
             csv = "projeto_si_atualizado.csv"; 
-//          printf("tok: %s\n", tok);  
+//          debug("tok: %s\n", tok);  
             lerArquivoTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
             free(cabecalho);
         }
     else if(nro == 2) { //funcionalidade 2
         tok = strtok(0, " ");
-        //printf("tok: %s\n", tok);  
+        //debug("tok: %s\n", tok);  
         iteradorBinarioTexto(dados, tok);
     } else if(nro == 3){ //funcionalidade 3 
         tok = strtok(0, " ");
