@@ -14,13 +14,13 @@ typedef struct registroCabecalho {
 } TregistroCabecalho;
 
 typedef struct registroDados {
-    //char removido[1]; //campos adicionais
-    //int encadeamento;
+    char removido[1]; //campos adicionais
+    int encadeamento;
     int nroInscricao; //3 PRIMEIROS FIXO
     double nota;
     char data[10]; //TODO FAZER MÁSCARA PARA DATA
-    //int tamanho_cidade;
-    char cidade[30]; //variável
-    //int tamanho_nomEscola;
-    char nomeEscola[30];
+    int tamanho_cidade;
+    char *cidade; //variável
+    int tamanho_nomeEscola;
+    char *nomeEscola;
 } TregistroDados;
