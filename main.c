@@ -127,22 +127,20 @@ void printRegistro(TregistroDados *reg) {
 int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) { //OK
                 
     size = sizeof(char)       * fwrite(&reg->removido, sizeof(char), 1, bin);
-    size = sizeof(int)        * fwrite(&reg->encadeamento, sizeof(int), 1, bin);
-    size = sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
+    size += sizeof(int)        * fwrite(&reg->encadeamento, sizeof(int), 1, bin);
+    size += sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); // gravando os registros
     size += sizeof(double)    * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += sizeof(reg->data) * fwrite(&reg->data, sizeof(reg->data), 1, bin);
     
-    if(reg->tamanho_cidade != 0) {
+    if(reg ->tamanho_cidade != 0) {
         size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(int), 1, bin);
-        size = size +1;
         fputc('4',bin);
-        size += reg->tamanho_cidade +1 * fwrite(reg->cidade, reg->tamanho_cidade +1, 1, bin);
+        size += reg->tamanho_cidade * fwrite(reg->cidade, reg->tamanho_cidade-1 , 1, bin);
     } 
     if(reg->tamanho_nomeEscola != 0) {
         size += sizeof(int)             * fwrite(&reg->tamanho_nomeEscola, sizeof(int), 1, bin);
-        size = size +1;
         fputc('5',bin);
-        size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola, 1, bin);
+        size += reg->tamanho_nomeEscola * fwrite(reg->nomeEscola, reg->tamanho_nomeEscola-1, 1, bin);
     }
     printf("size: %d", size);
     while (size < 80) { // preenche com @ até size==80
@@ -160,7 +158,7 @@ int alocarCamposVariaveis(char *tok, char **campo) { //OK
         *campo = malloc(len+1); //aloca cidade
         if(*campo == NULL) exit(0);
         strcpy(*campo, tok); //copia registro - irá para as primeiras posições    
-        return len +1; //para alocar os 2 bytes
+        return len + 2; //para alocar os 2 bytes
     } else {
         *campo = NULL;
         return 0;
