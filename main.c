@@ -6,11 +6,7 @@
 #include <string.h>
 #include <struct.h>
 
-#ifdef _DEBUG
 #define debug(...) fprintf(stderr, ##__VA_ARGS__)
-#else
-#define debug(...)
-#endif
 
 void printCabecalho(TregistroCabecalho *cabecalho) {
     debug("\n status: %s\n", cabecalho->status);
@@ -227,23 +223,33 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
 }
 
 TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
-    int size = 0, i = 0;
+    int i = 0;
 
-    reg->cidade = malloc(sizeof(char)*55);
-    reg->nomeEscola = malloc(sizeof(char)*55);
+    memcpy(&reg->removido, &buffer[0], sizeof(char));
+    memcpy(&reg->encadeamento, &buffer[1], sizeof(int));
+    memcpy(&reg->nroInscricao, &buffer[5], sizeof(int));
+    memcpy(&reg->nota, &buffer[9], sizeof(double));
+    memcpy(&reg->data, &buffer[17], sizeof(char)*10);
+    debug("read fields: %c %d %d %lf %s\n", reg->removido[0], reg->encadeamento, reg->nroInscricao, reg->nota, reg->data);
 
-    memcpy(&reg->nroInscricao, buffer, sizeof(int));
-    memcpy(&reg->nota, &buffer[4], sizeof(double));
-    memcpy(&reg->data, &buffer[12], sizeof(char)*10);
-    if(buffer[22] != '@') {
-        memcpy(&reg->tamanho_cidade, &buffer[22], sizeof(int));
-        memcpy(reg->cidade, &buffer[26], reg->tamanho_cidade);
-        reg->cidade[reg->tamanho_cidade] = '\0';
-    }
-    if(buffer[26+reg->tamanho_cidade] != '@') {
-        memcpy(&reg->tamanho_nomeEscola, &buffer[26+reg->tamanho_cidade], sizeof(int));
-        memcpy(reg->nomeEscola, &buffer[26+reg->tamanho_cidade+4], reg->tamanho_nomeEscola);
-        reg->nomeEscola[reg->tamanho_nomeEscola] = '\0';
+    i = 27;
+    while (i<80 && buffer[i] != '@') {
+            char tag = buffer[i+4];
+            debug("next tag: %c\n", tag);
+            if (tag == '4') {
+                memcpy(&reg->tamanho_cidade, &buffer[i], sizeof(int));
+                reg->cidade = malloc(sizeof(char) * reg->tamanho_cidade);
+                memcpy(reg->cidade, &buffer[i+5], reg->tamanho_cidade-1);
+                i += 4 + reg->tamanho_cidade;
+                debug("tam: %d, str: %s\n", reg->tamanho_cidade, reg->cidade);
+            }
+            else if (tag == '5') {
+                memcpy(&reg->tamanho_nomeEscola, &buffer[i], sizeof(int));
+                reg->nomeEscola = malloc(sizeof(char) * reg->tamanho_nomeEscola);
+                memcpy(reg->nomeEscola, &buffer[i+5], reg->tamanho_nomeEscola-1);
+                i += 4 + reg->tamanho_nomeEscola;
+                debug("tam: %d, str: %s\n", reg->tamanho_nomeEscola, reg->nomeEscola);
+        }
     }
     return reg; 
 }
@@ -306,18 +312,26 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
             debug("Falha no processamento do arquivo.");
             exit(0);
         }
-        int seek = fseek(fin, 0, SEEK_END);
+        fseek(fin, 0, SEEK_END);
         //debug("seek: %d\n", seek);
         debug("offset: %d\n", ftell(fin));
+        
         if(ftell(fin) == 0) {
             debug("Registro inexistente.");
             exit(0);
         }//  TODO tratar arquivos vazios */
+        fseek(fin, 16000, SEEK_SET);
         while(fread(buff, 80, 1, fin)) {
             dados1 = binarioParaTexto(buff, &dados[i]);
             printRegistro(&dados[i]);
-            free(dados->cidade);
-            free(dados->nomeEscola);
+            if(dados->cidade != NULL) {
+                free(dados->cidade);
+                dados->cidade = NULL;
+            }
+            if(dados->nomeEscola != NULL) {
+                free(dados->nomeEscola);
+                dados->nomeEscola = NULL;
+            }
             i++;
         }
         fclose(fin);         
