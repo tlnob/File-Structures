@@ -302,7 +302,6 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
                 continue;
             } 
         } else if (strcmp(campo, "nomeEscola") == 0) {
-            //printf("tam_escola %d\n", reg[i].tamanho_nomeEscola);
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
                 match = 1;
                 printRegistro(&reg[i]);
@@ -327,7 +326,7 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
     if(match == 0) {
         puts("Registro inexistente.");
     } else {
-        if(i*80 < 16000) {
+        if(i*80 < 16000) { //se acessou menoe de 16k são 2 páginas, 1: cabeçalho 2 página.
             puts("Número de páginas de disco acessadas: 2");  //+2 para pular a página de cabeçalho    
         } else {
         printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+2 para pular a página de cabeçalho
@@ -410,7 +409,7 @@ int main () {
     } else if(nro == 3) { //funcionalidade 3 
         char *arquivo = strtok(0, " ");
         tok = strtok(0, " ");
-        char *valor = strtok(0, " ");
+        char *valor = strtok(0, "");
         // tok = "nroInscricao";
         // valor = "13893";
         buscaCampo(arquivo, dados, tok, valor);// TODO: testar
