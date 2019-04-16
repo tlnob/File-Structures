@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <struct.h>
+#include <math.h>
 
 //#define debug(...) fprintf(stderr, ##__VA_ARGS__)
 
@@ -260,60 +261,55 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
     int i = 0;
     int nro;
     double nota;
-    
+    int match = 0;
+
     fseek(fin, 16000, SEEK_SET); //setando apos os 16k primeiros bytes
     while(fread(buffer, 80, 1, fin)) {
         binarioParaTexto(buffer, &reg[i]);
-        
         if(strcmp(campo, "nroInscricao") == 0) {
             nro = atoi(valor_campo);
             if(nro == reg[i].nroInscricao) {
+                match = 1;
                 printRegistro(&reg[i]);
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
                 break; //id único, não há necessidade de procurar mais
             } else {
-                puts("Registro inexistente.");
-                break;
+                i++;
+                continue;
             }
         } else if(strcmp(campo, "nota") == 0) {
             nota = atof(valor_campo);
-            printf("nota: %.1lf", nota);
-            if(nro == reg[i].nota) {
-                printf("reg nota: %.1lf", reg[i].nota);
+            if(nota == reg[i].nota) {
+                match = 1;
                 printRegistro(&reg[i]);
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
-            }
-             else {
-                puts("Registro inexistente.");
-                break;
+            } else {
+                i++;
+                continue;
             }
         } else if(strcmp(campo, "data") == 0) {
             if(strcmp(valor_campo, reg[i].data) == 0) {
+                match = 1;
                 printRegistro(&reg[i]);
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
             } else {
-                puts("Registro inexistente.");
-                break;
+                i++;
+                continue;
             }
         } else if(strcmp(campo, "cidade") == 0) {
             if(reg[i].tamanho_cidade != 0 && strcmp(valor_campo, reg[i].cidade) == 0) {
+                match = 1;
                 printRegistro(&reg[i]);
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
-                break;
             } else {
-                puts("Registro inexistente.");
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
-                break;
-            }
+                i++;
+                continue;
+            } 
         } else if (strcmp(campo, "nomeEscola") == 0) {
             //printf("tam_escola %d\n", reg[i].tamanho_nomeEscola);
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
+                match = 1;
                 printRegistro(&reg[i]);
-                printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+2 para pular a página de cabeçalho
             } else {
-                puts("Registro inexistente.");
-                break;
-            }
+                i++;
+                continue;
+            } 
         } else {
             puts("Registro inexistente.");
             exit(0);
@@ -328,7 +324,15 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
         }
         i++;
     }
-    
+    if(match == 0) {
+        puts("Registro inexistente.");
+    } else {
+        if(i*80 < 16000) {
+            puts("Número de páginas de disco acessadas: 2");  //+2 para pular a página de cabeçalho    
+        } else {
+        printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+2 para pular a página de cabeçalho
+        }
+    }
     fclose(fin);
 }
 
@@ -403,7 +407,7 @@ int main () {
         tok = strtok(0, " ");
         //debug("tok: %s\n", tok);  
         iteradorBinarioTexto(dados, tok);
-    } else if(nro == 3){ //funcionalidade 3 
+    } else if(nro == 3) { //funcionalidade 3 
         char *arquivo = strtok(0, " ");
         tok = strtok(0, " ");
         char *valor = strtok(0, " ");
