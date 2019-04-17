@@ -179,8 +179,7 @@ void lerRegistroTexto(TregistroDados *reg, char *buffer) { //OK
                 }
             } 
             /*Para os campos de tamanho variável, os valores nulos devem ser representados da seguinte forma:o
-            não  devem  ser  armazenados  os  campos  referentes:  
-            (ii) TODO: à tag que representa o dado;*/
+            não  devem  ser  armazenados  os  campos  referentes:  */
             else if(count == 3) reg->tamanho_cidade = alocarCamposVariaveis(tok, &reg->cidade);
             else if(count == 4) reg->tamanho_nomeEscola = alocarCamposVariaveis(tok, &reg->nomeEscola);
             
@@ -195,12 +194,13 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         FILE *csv_file = fopen(csv_nome, "r"); 
         int size = 0, i = 0;
         if (csv_file == NULL) {
-    //      memcpy(reg.status, "0", 1); //TODO conferir se é zero msm
             printf("Falha no carregamento do arquivo.\n");
             exit(0);
         }        
         FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
+        memcpy(cabecalho->status, "1", 1); 
         if(bin == NULL) {
+            memcpy(cabecalho->status, "0", 1); 
             printf("Falha no carregamento do arquivo.");
             exit(0);
         }
@@ -216,6 +216,7 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
        // debug("total size: %d\n", size);
         fclose(csv_file);
         fclose(bin);
+        memcpy(cabecalho->status, "1", 1); 
         printf("%s", bin_file);
 }
 
@@ -251,7 +252,7 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
     return reg; 
 }
 
- void buscaCampo(char *filein, TregistroDados *reg, char *campo, char *valor_campo) {
+ void buscaCampo(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
     FILE *fin = fopen(filein, "rb");
     if(fin == NULL) {
         puts("erro file\n");
@@ -371,6 +372,34 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         return dados;
 }
 
+void buscaCampoPorRRN(char *arquivo, char *rrn, TregistroDados *reg) {
+    FILE *fin = fopen(arquivo, "rb");
+    char buffer[80];
+    int i = 0, match = 0, bytesSize = 0;
+    int RRN = atoi(rrn);
+    if(fin == NULL) {
+        puts("erro file\n");
+        exit(0);
+    }
+
+    fseek(fin, 0, SEEK_END);   //checando se o RRN é possível de ser encontrado no arquivo de acordo com o tam de bytes
+    bytesSize = ftell(fin);
+    if (RRN*80 > bytesSize) {
+        puts("Registro inexistente.");
+    } else {
+        fseek(fin, 16000-80, SEEK_SET); //setando apos os 16k primeiros bytes     
+        fseek(fin, RRN*80, SEEK_CUR);  
+        while(fread(buffer, 80, 1, fin)) {
+            fread(buffer, 80, 1, fin);
+            binarioParaTexto(buffer, reg);
+            printRegistro(reg);
+            i++;
+            break;
+        }
+        printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));
+    }
+}
+
 int main () { 
     TregistroCabecalho *cabecalho;
     TregistroDados dados[10000]; 
@@ -382,7 +411,6 @@ int main () {
     char *bin = "arquivoTrab1si.bin";
     int nro;    
     FILE *fbin;
-    char *campoDados;
     int size = 0, i = 0;
     FILE* fin;
     fflush(stdout);
@@ -412,9 +440,12 @@ int main () {
         char *valor = strtok(0, "");
         // tok = "nroInscricao";
         // valor = "13893";
-        buscaCampo(arquivo, dados, tok, valor);// TODO: testar
+        buscaCampo(arquivo, dados, tok, valor, cabecalho);
     } else if(nro == 4){ //funcionalidade 4 
-
+        char *arquivo = strtok(0, " ");
+        tok = strtok(0, " "); //rrn
+        //arquivo = bin;
+        buscaCampoPorRRN(arquivo, tok, dados);
     }
     return 0;
 }
