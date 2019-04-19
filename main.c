@@ -7,7 +7,7 @@
 #include <struct.h>
 #include <math.h>
 
-//#define debug(...) fprintf(stderr, ##__VA_ARGS__)
+#define debug(...) fprintf(stderr, ##__VA_ARGS__)
 
 void printCabecalho(TregistroCabecalho *cabecalho) {
     //debug("\n status: %s\n", cabecalho->status);
@@ -217,7 +217,7 @@ void lerArquivoTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho,
         fclose(csv_file);
         fclose(bin);
         memcpy(cabecalho->status, "1", 1); 
-        printf("%s", bin_file);
+        printf("%s\n", bin_file);
 }
 
 TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
@@ -299,6 +299,7 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
                 match = 1;
                 printRegistro(&reg[i]);
             } else {
+                debug(" i:   %d", i);
                 i++;
                 continue;
             } 
@@ -327,10 +328,10 @@ TregistroDados* binarioParaTexto(char buffer[], TregistroDados *reg) { //OK
     if(match == 0) {
         puts("Registro inexistente.");
     } else {
-        if(i*80 < 16000) { //se acessou menoe de 16k são 2 páginas, 1: cabeçalho 2 página.
-            puts("Número de páginas de disco acessadas: 2");  //+2 para pular a página de cabeçalho    
+        if(i*80 < 16000) { //se acessou menos de 16k são 2 páginas, 1: cabeçalho 2: 1ª página.
+            puts("Número de páginas de disco acessadas: 2");  //2 para pular a página de cabeçalho    
         } else {
-        printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+2 para pular a página de cabeçalho
+        printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+1 para pular a página de cabeçalho
         }
     }
     fclose(fin);
@@ -378,13 +379,14 @@ void buscaCampoPorRRN(char *arquivo, char *rrn, TregistroDados *reg) {
     int i = 0, match = 0, bytesSize = 0;
     int RRN = atoi(rrn);
     if(fin == NULL) {
-        puts("erro file\n");
+        puts("Falha no carregamento do arquivo.");
         exit(0);
     }
 
-    fseek(fin, 0, SEEK_END);   //checando se o RRN é possível de ser encontrado no arquivo de acordo com o tam de bytes
+    fseek(fin, -16000, SEEK_END);   //fazendo a conta excluindo os 16000 primeiros bytes da página de cabeçalho
     bytesSize = ftell(fin);
-    if (RRN*80 > bytesSize) {
+    debug("ftell %d", bytesSize);
+    if (RRN*80 > bytesSize) { //se o RRN do sdin for maior que o tamanho de bytes do arquivo ele nao existe
         puts("Registro inexistente.");
     } else {
         fseek(fin, 16000-80, SEEK_SET); //setando apos os 16k primeiros bytes     
@@ -432,7 +434,7 @@ int main () {
     }
     else if(nro == 2) { //funcionalidade 2
         tok = strtok(0, " ");
-        //debug("tok: %s\n", tok);  
+        debug("tok: %s\n", tok);  
         iteradorBinarioTexto(dados, tok);
     } else if(nro == 3) { //funcionalidade 3 
         char *arquivo = strtok(0, " ");
