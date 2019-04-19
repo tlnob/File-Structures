@@ -1,12 +1,10 @@
 CC=gcc
-CFLAGS=-I.
 
-all: main.c struct.h
-	gcc -o arquivo main.c $(CFLAGS) 
+all: 
+	gcc -o arquivo *.c -I.
 
-debug: main.c struct.h
-	gcc -o arquivo main.c $(CFLAGS) -D_DEBUG
+debug: 
+	gcc -o arquivo *.c -I. -D_DEBUG
 	
 run: 
 	./arquivo
-

@@ -1,3 +1,8 @@
+//7163822 Thais Lima de Oliveira Nobre
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct registroCabecalho {
     char status[1]; 
     int  topoPilha;
@@ -24,3 +29,17 @@ typedef struct registroDados {
     int tamanho_nomeEscola;
     char *nomeEscola;
 } TregistroDados;
+
+void            preencheFimDaString(char*);
+void            insertCabecalho(TregistroCabecalho *);
+int             gravarCabecalhoBinario(FILE *, TregistroCabecalho *);
+void            printRegistroDados(TregistroDados *);
+int             gravarDadosBinario(TregistroDados *, FILE *, int);
+int             alocarCamposVariaveis(char *, char **);
+void            lerRegistroTexto(TregistroDados *, char *);
+void            lerRegistroTextoGravaBinario(char *, TregistroCabecalho *, TregistroDados *, char *);
+TregistroDados* binarioParaTexto(char *, TregistroDados *);
+void            buscaCampo(char *, TregistroDados *, char *, char *, TregistroCabecalho *);
+TregistroDados* iteradorBinarioTexto(TregistroDados *, char *);
+void            buscaCampoPorRRN(char *, char *, TregistroDados *);
+
