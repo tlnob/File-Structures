@@ -39,7 +39,10 @@ int             alocarCamposVariaveis(char *, char **);
 void            lerRegistroTexto(TregistroDados *, char *);
 void            lerRegistroTextoGravaBinario(char *, TregistroCabecalho *, TregistroDados *, char *);
 TregistroDados* binarioParaTexto(char *, TregistroDados *);
-void            buscaCampo(char *, TregistroDados *, char *, char *, TregistroCabecalho *);
+int            buscaCampo(FILE *, TregistroDados *, char *, char *, TregistroCabecalho *);
 TregistroDados* iteradorBinarioTexto(TregistroDados *, char *);
 void            buscaCampoPorRRN(char *, char *, TregistroDados *);
 
+TregistroCabecalho* removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab);
+void insert(TregistroDados *, TregistroCabecalho *);
+void update(TregistroDados *, TregistroCabecalho *);

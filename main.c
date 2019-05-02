@@ -6,6 +6,7 @@
 #include <string.h>
 #include "struct.h"
 
+
 int main () { 
     TregistroCabecalho *cabecalho;
     TregistroDados dados[10000]; 
@@ -41,11 +42,28 @@ int main () {
         char *arquivo = strtok(0, " ");
         tok = strtok(0, " ");
         char *valor = strtok(0, "");
-        buscaCampo(arquivo, dados, tok, valor, cabecalho);
+        FILE *fin = fopen(arquivo, "rb"); 
+        if(arquivo == NULL) {
+            puts("Falha no processamento do arquivo.");
+            exit(0);
+        }
+        buscaCampo(fin, dados, tok, valor, cabecalho);
+        fclose(fin);
     } else if(nro == 4){ //funcionalidade 4 
         char *arquivo = strtok(0, " ");
         tok = strtok(0, " "); //rrn
         buscaCampoPorRRN(arquivo, tok, dados);
+    } else if(nro == 5) { //funcionalidade 5
+        char *arquivo = strtok(0, " ");
+        tok = strtok(0, " "); //n vezes
+        int len = atoi(tok);
+        for(int i = 0; i < len; i++) {
+            char *file = strtok(0, " ");
+            char *field = strtok(0, " ");
+            char *valor = strtok(0, "");
+            removeReg(arquivo, dados, tok, valor, cabecalho);
+        }
     }
+
     return 0;
 }

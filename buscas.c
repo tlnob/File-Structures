@@ -8,12 +8,8 @@
 //o arquivo binário já gravado anteriormente e checa pela string passada como parâmetro via stdin qual o campo
 //será buscado. Caso seja buscado nroInscricao a busca para (break), caso seja outro campo, a busca é realizada
 //até o final do arquivo.
- void buscaCampo(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
-    FILE *fin = fopen(filein, "rb");
-    if(fin == NULL) {
-        puts("Falha no processamento do arquivo.");
-        exit(0);
-    }
+ int buscaCampo(FILE *fin, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
+
     char buffer[80];
     int i = 0;
     int nro;
@@ -91,9 +87,9 @@
                 total= (int)(total + 0.5);
             }
             printf("Número de páginas de disco acessadas: %.0lf\n", total); 
+            return i;
         }
     }
-    fclose(fin);
 }
 
 //referente à funcionalidade 4 a função lê do binário, passa pra texto com "binarioParaTexto"
