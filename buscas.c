@@ -8,12 +8,8 @@
 //o arquivo binário já gravado anteriormente e checa pela string passada como parâmetro via stdin qual o campo
 //será buscado. Caso seja buscado nroInscricao a busca para (break), caso seja outro campo, a busca é realizada
 //até o final do arquivo.
- void buscaCampo(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
-    FILE *fin = fopen(filein, "rb");
-    if(fin == NULL) {
-        puts("Falha no processamento do arquivo.");
-        exit(0);
-    }
+ int buscaCampo(FILE *fin, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
+
     char buffer[80];
     int i = 0;
     int nro;
@@ -82,18 +78,21 @@
     }
     if(match == 0) {
         puts("Registro inexistente.");
+        return -1;
     } else {
         if(i*80 < 16000) { //se acessou menos de 16k são 2 páginas, 1: cabeçalho 2: 1ª página.
-            puts("Número de páginas de disco acessadas: 2");  //2 para pular a página de cabeçalho    
+            puts("Número de páginas de disco acessadas: 2");  //2 para pular a página de cabeçalho 
+            return i*80;   
         } else {
             double total = 1+((i*80)/16000); // i*80 é a quantidade de registros visitada vezes seu tamanho, divide-se por 16000 que é o tamanho da página de disco
             if(total >= 0) { //arredondamento para cima
                 total= (int)(total + 0.5);
             }
             printf("Número de páginas de disco acessadas: %.0lf\n", total); 
+            puts("a");
+            return i*80;
         }
     }
-    fclose(fin);
 }
 
 //referente à funcionalidade 4 a função lê do binário, passa pra texto com "binarioParaTexto"
