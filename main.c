@@ -1,5 +1,6 @@
 //7163822 Thais Lima de Oliveira Nobre
 //http://wiki.icmc.usp.br/images/2/20/SCC0503012019trabalho1b.pdf
+//http://wiki.icmc.usp.br/images/a/a6/SCC0503012019trabalho2.pdf
 //http://wiki.icmc.usp.br/index.php/SCC0503012019(cdac)
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,18 +23,13 @@ int main () {
     FILE* fin;
     fflush(stdout);
     scanf("%[^\n]", option); 
-
+    cabecalho = malloc(sizeof(TregistroCabecalho));
     char *tok = strtok(option, " ");
     nro = atoi(tok); //primeiro valor antes de espaco "1 "
     if(nro == 1) { //funcionalidade 1
-        cabecalho = malloc(sizeof(TregistroCabecalho));
         tok = strtok(0, " ");
         csv = tok;
         lerRegistroTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
-        if(cabecalho != NULL) {
-            free(cabecalho);
-            cabecalho = NULL;
-        }   
     }
     else if(nro == 2) { //funcionalidade 2
         tok = strtok(0, " ");
@@ -55,14 +51,31 @@ int main () {
         buscaCampoPorRRN(arquivo, tok, dados);
     } else if(nro == 5) { //funcionalidade 5
         char *arquivo = strtok(0, " ");
+        printf(" %s\n", arquivo); //VALOR CERTO
         tok = strtok(0, " "); //n vezes
         int len = atoi(tok);
+        printf("%d\n", len);
+        puts("aaaa");
+        char field[15];
+        fflush(stdin); //n sei se resolve
         for(int i = 0; i < len; i++) {
-            char *file = strtok(0, " ");
-            char *field = strtok(0, " ");
+            scanf("\n%[^\n]", field); //lê as linhas seguintes
+            puts(field);
+            tok = strtok(field, " ");
+            printf("arquivo: %s\n", arquivo); // o arquivo perde seu vaor aqui.
+            printf("field %d: %s\n",i, tok);
             char *valor = strtok(0, "");
+            printf("valor %d: %s\n",i, valor);
             removeReg(arquivo, dados, tok, valor, cabecalho);
+            if(cabecalho != NULL) {
+                free(cabecalho);
+                cabecalho = NULL;
+            }
         }
+    }
+    if(cabecalho != NULL) {
+        free(cabecalho);
+        cabecalho = NULL;
     }
 
     return 0;
