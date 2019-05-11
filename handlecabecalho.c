@@ -57,6 +57,7 @@ int gravarCabecalhoBinario(FILE *bin, TregistroCabecalho *cabecalho) {
     
     size =                fwrite(&cabecalho->status, 1, 1, bin); 
     size += sizeof(int) * fwrite(&cabecalho->topoPilha, sizeof(int), 1, bin);
+    printf("cab topo pilha: %d\n", cabecalho->topoPilha);
     size +=               fwrite(&cabecalho->tagCampo1, sizeof(cabecalho->tagCampo1), 1, bin);
     size += 55 *          fwrite(&cabecalho->desCampo1, sizeof(cabecalho->desCampo1), 1, bin); 
     size +=               fwrite(&cabecalho->tagCampo2, sizeof(cabecalho->tagCampo2), 1, bin);
