@@ -64,7 +64,9 @@ int main () {
             printf("arquivo: %s\n", arquivo); // o arquivo perde seu vaor aqui.
             printf("field %d: %s\n",i, tok);
             char *valor = strtok(0, "");
-            printf("valor %d: %s\n",i, valor);
+            printf("valor %s: \n", valor);
+            removeQuotes(valor);
+            printf("valor unquote %s:\n", valor); 
             removeReg(arquivo, dados, tok, valor, cabecalho);
             
             if(cabecalho != NULL) {
@@ -81,3 +83,19 @@ int main () {
 
     return 0;
 }
+
+void removeQuotes(char *line) {
+    int j = 0;
+    for (int i = 0; i < strlen(line); i++) {
+        if (line[i] == '\\') {
+            line[j++] = line[i++];
+            line[j++] = line[i];
+            if (line[i] == '\0')
+                break;
+        }
+        else if (line[i] != '"') line[j++] = line[i];
+    }
+    line[j] = '\0';
+    
+}
+
