@@ -55,22 +55,23 @@ int main () {
         tok = strtok(0, " "); //n vezes
         int len = atoi(tok);
         printf("%d\n", len);
-        puts("aaaa");
         char field[15];
-        fflush(stdin); //n sei se resolve
+        fflush(stdin); 
         for(int i = 0; i < len; i++) {
             scanf("\n%[^\n]", field); //lê as linhas seguintes
-            puts(field);
+            //puts(field);
             tok = strtok(field, " ");
             printf("arquivo: %s\n", arquivo); // o arquivo perde seu vaor aqui.
             printf("field %d: %s\n",i, tok);
             char *valor = strtok(0, "");
             printf("valor %d: %s\n",i, valor);
             removeReg(arquivo, dados, tok, valor, cabecalho);
+            
             if(cabecalho != NULL) {
                 free(cabecalho);
                 cabecalho = NULL;
             }
+
         }
     }
     if(cabecalho != NULL) {

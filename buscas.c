@@ -12,10 +12,10 @@
 
     char buffer[80];
     int i = 0;
-    int nro;
+    int nro, j = 0;
     double nota;
     int match = 0;
-
+    int vector[100];
     fseek(fin, 16000, SEEK_SET); //setando apos os 16k primeiros bytes
     while(fread(buffer, 80, 1, fin)) {
         binarioParaTexto(buffer, &reg[i]);

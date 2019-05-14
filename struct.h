@@ -46,3 +46,4 @@ void            buscaCampoPorRRN(char *, char *, TregistroDados *);
 void            removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab);
 void            insert(char *, TregistroDados *, TregistroCabecalho *);
 void            update(char *, TregistroDados *, TregistroCabecalho *);
+void            handleRemove(int, FILE *);
