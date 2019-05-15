@@ -45,13 +45,14 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
                 continue;
             }
         } else if(strcmp(campo, "data") == 0) {
-            if(strcmp(valor_campo, reg[i].data) == 0) {
+            if(strcmp(valor_campo, reg[i].data) == 0) {//comparaçao entra
                 handleRemove(i, fin);                
+                printf("i %d\n", i);
             } else {
                 i++;
                 continue;
             }
-        }  else if(strcmp(campo, "nota") == 0) {
+        } /* else if(strcmp(campo, "nota") == 0) {
             double nota = atof(valor_campo);
             if(nota == reg[i].nota) {
                 handleRemove(i, fin);
@@ -60,7 +61,6 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
                 continue;
             }
         } else if(strcmp(campo, "cidade") == 0) {
-            puts("regiii");
             if(reg[i].tamanho_cidade != 0 && strcmp(valor_campo, reg[i].cidade) == 0) {
                 printRegistroDados(&reg[i]);
                 handleRemove(i, fin);
@@ -70,33 +70,37 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
             } 
         } else if (strcmp(campo, "nomeEscola") == 0) {
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
+                puts("entrei aqui");
                 handleRemove(i, fin);
+                puts("entrei aqui 2");
             } else {
                 i++;
                 continue;
             } 
-        } else {
+        } */else {
             puts("Registro inexistente.");
             exit(0);
         }
-        
+        puts("entrei aqui 3");
     }
-
-     //   binarioNaTela1(fin);
+    puts("entrei aqui 4");
+    //binarioNaTela1(fin);
     fclose(fin);
 }
 
 void handleRemove(int rrn, FILE *fin) {
     int topo;
     rrn = rrn*80;
+    if(fin == NULL) printf("Falha no processamento do arquivo.");
+
     /*Lendo o topoPilha do cabeçalho*/
     fseek(fin, 1, SEEK_SET);  // inicialmente -1
     fread(&topo, sizeof(int), 1, fin); //lê o topo na variável "topo"
     
     /*Alterando o registro buscado */
     fseek(fin, rrn+16000, SEEK_SET); //retorna o rrn do registro buscado pulando as páginas de disco iniciais
-    fwrite("*", sizeof(char), 1, fin); //grava * no campo removido
-    fwrite(&topo, sizeof(int), 1, fin); // grava topoPilha no campo encadeamento
+    fputc('*', fin); //grava * no campo removido
+    fwrite(&topo, sizeof(int), 1, fin); // grava topoPilha no campo encadeamento --TODO Nao pega certo
     
     /* @ no restante dos campos */
     int size = 5; //  1 char e 4 bytes de int 
@@ -104,11 +108,12 @@ void handleRemove(int rrn, FILE *fin) {
         fputc('@', fin);
         size++;
     }
-
+    
     /*Atualizando o topoPilha no cabeçalho*/
+    
     fseek(fin, 1, SEEK_SET); //para voltar para o cabeçalho e gravar o novo dado do topo da pilha
     fwrite(&rrn, sizeof(int), 1, fin); // gravando no topoPilha rrn do registro
-    
+    printf("topodssfs: %d\n", topo);
 }
 
 void insert(char *filein, TregistroDados *dados, TregistroCabecalho *cabecalho) {

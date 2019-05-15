@@ -47,3 +47,6 @@ void            removeReg(char *filein, TregistroDados *reg, char *campo, char *
 void            insert(char *, TregistroDados *, TregistroCabecalho *);
 void            update(char *, TregistroDados *, TregistroCabecalho *);
 void            handleRemove(int, FILE *);
+void            scan_quote_string(char *);
+void            removeQuotes(char *);
+void            trim(char *);

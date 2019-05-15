@@ -51,29 +51,19 @@ int main () {
         buscaCampoPorRRN(arquivo, tok, dados);
     } else if(nro == 5) { //funcionalidade 5
         char *arquivo = strtok(0, " ");
-        printf(" %s\n", arquivo); //VALOR CERTO
+        printf("%s\n", arquivo); //VALOR CERTO
         tok = strtok(0, " "); //n vezes
         int len = atoi(tok);
-        printf("%d\n", len);
-        char field[15];
+        printf("len %d\n", len);
+        char field[15], valor[40];
         fflush(stdin); 
         for(int i = 0; i < len; i++) {
-            scanf("\n%[^\n]", field); //lê as linhas seguintes
-            //puts(field);
-            tok = strtok(field, " ");
+            scanf("%s", field); //lê as linhas seguintes
+            scan_quote_string(valor);
+            trim(field);
+            trim(valor);
             printf("arquivo: %s\n", arquivo); // o arquivo perde seu vaor aqui.
-            printf("field %d: %s\n",i, tok);
-            char *valor = strtok(0, "");
-            printf("valor %s: \n", valor);
-            removeQuotes(valor);
-            printf("valor unquote %s:\n", valor); 
-            removeReg(arquivo, dados, tok, valor, cabecalho);
-            
-            if(cabecalho != NULL) {
-                free(cabecalho);
-                cabecalho = NULL;
-            }
-
+            removeReg(arquivo, dados, field, valor, cabecalho);
         }
     }
     if(cabecalho != NULL) {

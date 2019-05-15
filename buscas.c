@@ -53,7 +53,7 @@
             } else {
                 i++;
                 continue;
-            } 
+            }
         } else if (strcmp(campo, "nomeEscola") == 0) {
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
                 match = 1;
