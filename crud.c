@@ -4,7 +4,6 @@
 #include "struct.h"
 
 void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab) {
-    filein = "arquivoTrab1si.bin"; // TODO : delete line after fix in main
     FILE *fin = fopen(filein, "r+b");
     if(fin == NULL) {
         puts("Falha no processamento do arquivo.");
@@ -52,7 +51,7 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
                 i++;
                 continue;
             }
-        } /* else if(strcmp(campo, "nota") == 0) {
+        }  else if(strcmp(campo, "nota") == 0) {
             double nota = atof(valor_campo);
             if(nota == reg[i].nota) {
                 handleRemove(i, fin);
@@ -70,21 +69,16 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
             } 
         } else if (strcmp(campo, "nomeEscola") == 0) {
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
-                puts("entrei aqui");
                 handleRemove(i, fin);
-                puts("entrei aqui 2");
             } else {
                 i++;
                 continue;
             } 
-        } */else {
+        } else {
             puts("Registro inexistente.");
             exit(0);
         }
-        puts("entrei aqui 3");
     }
-    puts("entrei aqui 4");
-    //binarioNaTela1(fin);
     fclose(fin);
 }
 

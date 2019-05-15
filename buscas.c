@@ -98,22 +98,21 @@
 //referente à funcionalidade 4 a função lê do binário, passa pra texto com "binarioParaTexto"
 //e dá um fseek exatamente na posição onde o RRN do registro se encontra, multplicando-o por 80
 // que é o tamanho do registro, printando-o na tela
-void buscaCampoPorRRN(char *arquivo, char *rrn, TregistroDados *reg) {
+void buscaCampoPorRRN(char *arquivo, int rrn, TregistroDados *reg) {
     FILE *fin = fopen(arquivo, "rb");
     char buffer[80];
     int i = 0, match = 0, bytesSize = 0;
-    int RRN = atoi(rrn);
     if(fin == NULL) {
         puts("Falha no carregamento do arquivo.");
         exit(0);
     }
     fseek(fin, -16000, SEEK_END);   //fazendo a conta excluindo os 16000 primeiros bytes da página de cabeçalho
     bytesSize = ftell(fin);
-    if (RRN*80 > bytesSize) { //se o RRN do stdin for maior que o tamanho de bytes do arquivo ele nao existe
+    if (rrn*80 > bytesSize) { //se o RRN do stdin for maior que o tamanho de bytes do arquivo ele nao existe
         puts("Registro inexistente.");
     } else {
         fseek(fin, 16000-80, SEEK_SET); //setando apos os 16k primeiros bytes     
-        fseek(fin, RRN*80, SEEK_CUR);  
+        fseek(fin, rrn*80, SEEK_CUR);  
         while(fread(buffer, 80, 1, fin)) {
             fread(buffer, 80, 1, fin);
             binarioParaTexto(buffer, reg);
