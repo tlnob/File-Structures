@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +23,9 @@
 
 
 
-	
+// Abaixo vai em algum .c
+
+
 void binarioNaTela1(FILE *ponteiroArquivoBinario) {
 
 	/* Escolha essa função se você ainda tem o ponteiro de arquivo 'FILE *' aberto.

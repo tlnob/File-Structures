@@ -41,8 +41,12 @@ void            lerRegistroTextoGravaBinario(char *, TregistroCabecalho *, Tregi
 TregistroDados* binarioParaTexto(char *, TregistroDados *);
 int             buscaCampo(FILE *, TregistroDados *, char *, char *, TregistroCabecalho *);
 TregistroDados* iteradorBinarioTexto(TregistroDados *, char *);
-void            buscaCampoPorRRN(char *, char *, TregistroDados *);
+void            buscaCampoPorRRN(char *, int, TregistroDados *);
 
 void            removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab);
 void            insert(char *, TregistroDados *, TregistroCabecalho *);
 void            update(char *, TregistroDados *, TregistroCabecalho *);
+void            handleRemove(int, FILE *);
+void            scan_quote_string(char *);
+void            trim(char *);
+void            binarioNaTela2(char *);

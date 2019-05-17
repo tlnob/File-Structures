@@ -12,66 +12,44 @@ int main () {
     TregistroCabecalho *cabecalho;
     TregistroDados dados[10000]; 
   
-    char option[4], *file;                
-    char *csv; 
-    char buffer[80], buff[80];
-    //csv = "teste.csv";
-    char *bin = "arquivoTrab1si.bin";
-    int nro;    
-    FILE *fbin;
-    int size = 0, i = 0;
+    char *file, *csv; 
+    char buffer[80], buff[80], arquivo[30], field[20], valor[40];
+    char *bin = "arquivo1.bin", *tok;
+    int size = 0, i = 0, option = 0, len;
     FILE* fin;
     fflush(stdout);
-    scanf("%[^\n]", option); 
+   	scanf("%d %s", &option, arquivo);
+
     cabecalho = malloc(sizeof(TregistroCabecalho));
-    char *tok = strtok(option, " ");
-    nro = atoi(tok); //primeiro valor antes de espaco "1 "
-    if(nro == 1) { //funcionalidade 1
-        tok = strtok(0, " ");
-        csv = tok;
-        lerRegistroTextoGravaBinario(csv, cabecalho, dados, bin); // lê do csv para struct
+    
+    if(option == 1) { //funcionalidade 1
+        lerRegistroTextoGravaBinario(arquivo, cabecalho, dados, bin); // lê do csv para struct
     }
-    else if(nro == 2) { //funcionalidade 2
-        tok = strtok(0, " ");
-        iteradorBinarioTexto(dados, tok);
-    } else if(nro == 3) { //funcionalidade 3 
-        char *arquivo = strtok(0, " ");
-        tok = strtok(0, " ");
-        char *valor = strtok(0, "");
+    else if(option == 2) { //funcionalidade 2
+        iteradorBinarioTexto(dados, arquivo);
+    } else if(option == 3) { //funcionalidade 3 
+        scanf("%s %[^\n]s", field, valor);
         FILE *fin = fopen(arquivo, "rb"); 
         if(arquivo == NULL) {
             puts("Falha no processamento do arquivo.");
             exit(0);
         }
-        buscaCampo(fin, dados, tok, valor, cabecalho);
+        buscaCampo(fin, dados, field, valor, cabecalho);
         fclose(fin);
-    } else if(nro == 4){ //funcionalidade 4 
-        char *arquivo = strtok(0, " ");
-        tok = strtok(0, " "); //rrn
-        buscaCampoPorRRN(arquivo, tok, dados);
-    } else if(nro == 5) { //funcionalidade 5
-        char *arquivo = strtok(0, " ");
-        printf(" %s\n", arquivo); //VALOR CERTO
-        tok = strtok(0, " "); //n vezes
-        int len = atoi(tok);
-        printf("%d\n", len);
-        puts("aaaa");
-        char field[15];
-        fflush(stdin); //n sei se resolve
-        for(int i = 0; i < len; i++) {
-            scanf("\n%[^\n]", field); //lê as linhas seguintes
-            puts(field);
-            tok = strtok(field, " ");
-            printf("arquivo: %s\n", arquivo); // o arquivo perde seu vaor aqui.
-            printf("field %d: %s\n",i, tok);
-            char *valor = strtok(0, "");
-            printf("valor %d: %s\n",i, valor);
-            removeReg(arquivo, dados, tok, valor, cabecalho);
-            if(cabecalho != NULL) {
-                free(cabecalho);
-                cabecalho = NULL;
-            }
+    } else if(option == 4){ //funcionalidade 4 
+        int rrn;
+        scanf("%d", &rrn);
+        buscaCampoPorRRN(arquivo, rrn, dados);
+    } else if(option == 5) { //funcionalidade 5s
+        scanf("%d", &len);
+        for(int i = 0; i <= len; i++) { 
+            scanf(" %s", field); //lê as linhas seguintes
+            scan_quote_string(valor);
+            trim(field);
+            trim(valor);
+            removeReg(arquivo, dados, field, valor, cabecalho); //todo arquivo vem com valor errado
         }
+        binarioNaTela2(arquivo);
     }
     if(cabecalho != NULL) {
         free(cabecalho);
@@ -80,3 +58,4 @@ int main () {
 
     return 0;
 }
+
