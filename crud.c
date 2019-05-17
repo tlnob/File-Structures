@@ -10,18 +10,6 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
         exit(0);
     }
 
-// 5 arquivo1.bin 11
-// nroInscricao 13893
-// nota 477.5
-// data "08/07/2005"
-// nomeEscola "JOAO ALVARES DE SIQUEIR"
-// cidade "Sao Carlos"
-// cidade "Coimbra"
-// nomeEscola "JOSE CELESTINO ARANHA"
-// nota 667.5
-// data "26/10/2005"
-// nroInscricao 13595
-// nroInscricao 2125
     int i = 0;
     
     char buffer[80];
@@ -34,10 +22,10 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
         if(strcmp(campo, "nroInscricao") == 0) {
             nro = atoi(valor_campo);
             if(nro == reg[i].nroInscricao) {
-                printf("reg[i].nroInscricao %d\n", reg[i].nroInscricao); 
-                printRegistroDados(&reg[i]);
+                //printf("reg[i].nroInscricao %d\n", reg[i].nroInscricao); 
+                //printRegistroDados(&reg[i]);
                 handleRemove(i, fin);
-                printf("i %d\n", i);
+                //printf("i %d\n", i);
                 break;
             } else {
                 i++;
@@ -84,7 +72,6 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
 
 void handleRemove(int rrn, FILE *fin) {
     int topo;
-    rrn = rrn*80;
     if(fin == NULL) printf("Falha no processamento do arquivo.");
 
     /*Lendo o topoPilha do cabeçalho*/
@@ -92,7 +79,7 @@ void handleRemove(int rrn, FILE *fin) {
     fread(&topo, sizeof(int), 1, fin); //lê o topo na variável "topo"
     
     /*Alterando o registro buscado */
-    fseek(fin, rrn+16000, SEEK_SET); //retorna o rrn do registro buscado pulando as páginas de disco iniciais
+    fseek(fin, (rrn*80)+16000, SEEK_SET); //retorna o rrn do registro buscado pulando as páginas de disco iniciais
     fputc('*', fin); //grava * no campo removido
     fwrite(&topo, sizeof(int), 1, fin); // grava topoPilha no campo encadeamento --TODO Nao pega certo
     
@@ -107,7 +94,6 @@ void handleRemove(int rrn, FILE *fin) {
     
     fseek(fin, 1, SEEK_SET); //para voltar para o cabeçalho e gravar o novo dado do topo da pilha
     fwrite(&rrn, sizeof(int), 1, fin); // gravando no topoPilha rrn do registro
-    printf("topodssfs: %d\n", topo);
 }
 
 void insert(char *filein, TregistroDados *dados, TregistroCabecalho *cabecalho) {
