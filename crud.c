@@ -9,15 +9,16 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
         puts("Falha no processamento do arquivo.");
         exit(0);
     }
-
+    //TODO: Caso de teste 11: só 1 registro, remove o registro e depois pede para remover de novo
     int i = 0;
     
     char buffer[80];
     int nro;
     
     fseek(fin, 16000, SEEK_SET); //setando apos os 16k primeiros bytes
-
+    int j = 0;
     while(fread(buffer, 80, 1, fin)) { //TODO ele nao funciona para o primeiro registro
+        if(feof(fin)) break;
         binarioParaTexto(buffer, &reg[i]);
         if(strcmp(campo, "nroInscricao") == 0) {
             nro = atoi(valor_campo);
@@ -27,30 +28,32 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
                 handleRemove(i, fin);
                 //printf("i %d\n", i);
                 break;
-            } else {
+             } else {
                 i++;
                 continue;
             }
         } else if(strcmp(campo, "data") == 0) {
             if(strcmp(valor_campo, reg[i].data) == 0) {//comparaçao entra
                 handleRemove(i, fin);                
-                printf("i %d\n", i);
+               // printf("data i: %d\n", i);
             } else {
                 i++;
                 continue;
-            }
+            } 
         }  else if(strcmp(campo, "nota") == 0) {
             double nota = atof(valor_campo);
             if(nota == reg[i].nota) {
                 handleRemove(i, fin);
+               // printf("nota i: %d\n", i);
             } else {
                 i++;
                 continue;
             }
         } else if(strcmp(campo, "cidade") == 0) {
             if(reg[i].tamanho_cidade != 0 && strcmp(valor_campo, reg[i].cidade) == 0) {
-                printRegistroDados(&reg[i]);
+               // printRegistroDados(&reg[i]);
                 handleRemove(i, fin);
+              //  printf("cidade i: %d\n", i);
             } else {
                 i++;
                 continue;
@@ -58,6 +61,7 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
         } else if (strcmp(campo, "nomeEscola") == 0) {
             if(reg[i].tamanho_nomeEscola != 0 && strcmp(valor_campo, reg[i].nomeEscola) == 0) {
                 handleRemove(i, fin);
+               // printf("nomeEscola: %d\n", i);
             } else {
                 i++;
                 continue;
@@ -66,12 +70,15 @@ void removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo
             puts("Registro inexistente.");
             exit(0);
         }
-    }
+        i++;
+    }    
     fclose(fin);
 }
 
 void handleRemove(int rrn, FILE *fin) {
     int topo;
+    unsigned long int flag;
+    flag = ftell(fin);
     if(fin == NULL) printf("Falha no processamento do arquivo.");
 
     /*Lendo o topoPilha do cabeçalho*/
@@ -94,6 +101,7 @@ void handleRemove(int rrn, FILE *fin) {
     
     fseek(fin, 1, SEEK_SET); //para voltar para o cabeçalho e gravar o novo dado do topo da pilha
     fwrite(&rrn, sizeof(int), 1, fin); // gravando no topoPilha rrn do registro
+    fseek(fin, flag, SEEK_SET);
 }
 
 void insert(char *filein, TregistroDados *dados, TregistroCabecalho *cabecalho) {

@@ -14,7 +14,7 @@ int main () {
   
     char *file, *csv; 
     char buffer[80], buff[80], arquivo[30], field[20], valor[40];
-    char *bin = "arquivo1.bin", *tok;
+    char *tok, *bin;// = "arquivo1.bin";
     int size = 0, i = 0, option = 0, len;
     FILE* fin;
     fflush(stdout);
@@ -42,8 +42,8 @@ int main () {
         buscaCampoPorRRN(arquivo, rrn, dados);
     } else if(option == 5) { //funcionalidade 5s
         scanf("%d", &len);
-        for(int i = 0; i <= len; i++) { 
-            scanf(" %s", field); //lê as linhas seguintes
+        for(int i = 0; i <= len; i++) {
+            scanf("%s", field); //lê as linhas seguintes
             scan_quote_string(valor);
             trim(field);
             trim(valor);
