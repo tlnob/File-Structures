@@ -86,7 +86,6 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) {
 // em um loop linha a linha do csv lendo para struct e gravando binário.
 void lerRegistroTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) { //OK
         char buffer[80];
-        
         FILE *csv_file = fopen(csv_nome, "r"); 
         int size = 0, i = 0;
         if (csv_file == NULL) {

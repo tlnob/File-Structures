@@ -100,8 +100,6 @@ void handleRemove(int rrn, FILE *fin) {
     fseek(fin, 1, SEEK_SET); //para voltar para o cabeçalho e gravar o novo dado do topo da pilha
     fwrite(&rrn, sizeof(int), 1, fin); // gravando no topoPilha rrn do registro
     fseek(fin, flag, SEEK_SET);
-
-    fclose(fin);
 }
 
 void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char *nroInscricao, char *nota, char *data, char *cidade, char *nomeEscola, int rrn) {
@@ -111,23 +109,43 @@ void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char 
         puts("Falha no processamento do arquivo.");
         exit(0);
     }
-    int topo, encadeamento = -1;
+
+    int topo, encadeamento = -1, count = 1;
     char buffer[80];
 
     memcpy(reg->removido,"-",1); 
     reg->encadeamento = -1;
     reg->nroInscricao = atoi(nroInscricao);
-
-    if(strcmp("NULO", nota)) {
+    if(strcmp("NULO", nota) == 0) {
         reg->nota = -1;    
     } else  reg->nota = atof(nota);
-
-    if (strcmp("NULO", data)) {
-        memcpy(reg->data, "\0@@@@@@@@@", 10); 
-    } else memcpy(reg->data, data, 10); // tratar nulos
     
-    reg->tamanho_cidade = alocarCamposVariaveis(cidade, &reg->cidade);
-    reg->tamanho_nomeEscola = alocarCamposVariaveis(nomeEscola, &reg->nomeEscola);
+    // printf("data %s\n", data);
+    // printf("cidade %s\n", cidade);
+    // printf("nomeEscola %s\n\n", nomeEscola);
+    
+    if (strcmp("", data) == 0) {
+        char datanull[10];
+        datanull[0] = '\0';
+        while(count <= 9){
+            datanull[count] = '@';
+            count++;
+        }
+        memcpy(reg->data, datanull, 10);
+    } else {
+        // puts("entrou no else");
+        memcpy(reg->data, data, 10); 
+    }
+
+    //printf("reg data %s\n\n", reg->data);
+
+    if (strcmp("", cidade) == 0) {
+        reg->tamanho_cidade = alocarCamposVariaveis("", &reg->cidade);
+    } else reg->tamanho_cidade = alocarCamposVariaveis(cidade, &reg->cidade);
+    
+    if (strcmp("", nomeEscola) == 0) {
+        reg->tamanho_nomeEscola = alocarCamposVariaveis("", &reg->nomeEscola);
+    } else reg->tamanho_nomeEscola = alocarCamposVariaveis(nomeEscola, &reg->nomeEscola);
 
 
     //*lê o topo da pilha no cabeçalho *//
@@ -141,6 +159,7 @@ void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char 
         fseek(fin, (topo*80)+16000, SEEK_SET); //volta para o início do registro do topo
     }
     else fseek(fin, 0, SEEK_END); 
+
        
     gravarDadosBinario(reg, fin, 0);
 
@@ -148,7 +167,7 @@ void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char 
     fseek(fin, 1, SEEK_SET);
     fwrite(&encadeamento, sizeof(int), 1, fin);    
 
-    printf("topo: %s %s %s %s %s \n", nroInscricao, nota, data, cidade, nomeEscola);
+    //printf("topo: %s %s %s %s %s \n", nroInscricao, nota, data, cidade, nomeEscola);
     fclose(fin);
    
 }
