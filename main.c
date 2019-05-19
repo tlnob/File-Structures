@@ -14,7 +14,7 @@ int main () {
   
     char *file, *csv; 
     char buffer[80], buff[80], *arquivo, field[20], valor[40];
-    char *tok, *bin = "arquivo1.bin";
+    char *tok, *bin;// = "arquivo1.bin";
     int size = 0, i = 0, option = 0, len;
     FILE* fin;
     fflush(stdout);
@@ -54,14 +54,13 @@ int main () {
         scanf("%d", &len);
         char buffer[80];
         char nroInscricao[6], nota[8], data[10], cidade[30], nomeEscola[30];
-        for(int i = 0; i < len; i++) {
-            
+        for(int i = 0; i < len; i++) {            
             scanf("%s %s", nroInscricao, nota);
             scan_quote_string(data);
             scan_quote_string(cidade);
             scan_quote_string(nomeEscola);
-            arquivo = "arquivo1.bin";   
-            puts(arquivo)         ;
+            arquivo = "arquivo1.bin";   //TODO
+            puts(arquivo);
             trim(data);
             trim(cidade);
             trim(nomeEscola);

@@ -100,83 +100,55 @@ void handleRemove(int rrn, FILE *fin) {
     fseek(fin, 1, SEEK_SET); //para voltar para o cabeçalho e gravar o novo dado do topo da pilha
     fwrite(&rrn, sizeof(int), 1, fin); // gravando no topoPilha rrn do registro
     fseek(fin, flag, SEEK_SET);
+
+    fclose(fin);
 }
 
 void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char *nroInscricao, char *nota, char *data, char *cidade, char *nomeEscola, int rrn) {
- //se topo for -1 tem que adicionar com seek_end e escrever no fim do registro
-    
-    
+
     FILE *fin = fopen(filein, "r+b");
     if(fin == NULL) {
         puts("Falha no processamento do arquivo.");
         exit(0);
     }
-    int topo, encadeamento;
+    int topo, encadeamento = -1;
     char buffer[80];
-    unsigned long int flag;
+
+    memcpy(reg->removido,"-",1); 
+    reg->encadeamento = -1;
+    reg->nroInscricao = atoi(nroInscricao);
+
+    if(strcmp("NULO", nota)) {
+        reg->nota = -1;    
+    } else  reg->nota = atof(nota);
+
+    if (strcmp("NULO", data)) {
+        memcpy(reg->data, "\0@@@@@@@@@", 10); 
+    } else memcpy(reg->data, data, 10); // tratar nulos
+    
+    reg->tamanho_cidade = alocarCamposVariaveis(cidade, &reg->cidade);
+    reg->tamanho_nomeEscola = alocarCamposVariaveis(nomeEscola, &reg->nomeEscola);
+
 
     //*lê o topo da pilha no cabeçalho *//
     fseek(fin, 1, SEEK_SET); 
     fread(&topo, sizeof(int), 1, fin);
     
-    memcpy(reg->removido,"-",1); 
-    reg->encadeamento = -1;
-    reg->nroInscricao = atoi(nroInscricao);
-    reg->nota = atof(nota);
-    memcpy(reg->data, data, 10); // tratar nulos
-    reg->tamanho_cidade = alocarCamposVariaveis(cidade, &reg->cidade);
-    reg->tamanho_nomeEscola = alocarCamposVariaveis(nomeEscola, &reg->nomeEscola);
-    
-    //*ponteiro vai para o campo encadeamento do registro que estava armazenado no topo da pilha *//
-    fseek(fin, (topo*80)+16000+1, SEEK_SET); 
-    fread(&encadeamento, sizeof(int), 1, fin);
-
+    /** PONTEIRO vai para o fim do arquivo caso topoPilha seja -1 **/
+    if(topo != -1) {
+        fseek(fin, (topo*80)+16000+1, SEEK_SET); //vai pegar o valor do int encadeamento
+        fread(&encadeamento, sizeof(int), 1, fin); 
+        fseek(fin, (topo*80)+16000, SEEK_SET); //volta para o início do registro do topo
+    }
+    else fseek(fin, 0, SEEK_END); 
+       
     gravarDadosBinario(reg, fin, 0);
 
     //* volta para o campo topo da pilha para gravar o encadeamento do registro que foi sobrescrito*//
     fseek(fin, 1, SEEK_SET);
-    fwrite(&encadeamento, sizeof(int), 1, fin);
-
-    
+    fwrite(&encadeamento, sizeof(int), 1, fin);    
 
     printf("topo: %s %s %s %s %s \n", nroInscricao, nota, data, cidade, nomeEscola);
-    
-  // if(topo == -1) {
-//        fseek(fin, 0, SEEK_END);
-       fseek(fin, (rrn*80), SEEK_SET); //retorna o rrn do registro buscado pulando as páginas de disco iniciais
-
-        reg->nroInscricao = atoi(nroInscricao);
-        reg->nota = atof(nota);
-        memcpy(reg->data, data, 10); // tratar nulos
-        reg->tamanho_cidade = alocarCamposVariaveis(cidade, &reg->cidade);
-        reg->tamanho_nomeEscola = alocarCamposVariaveis(nomeEscola, &reg->nomeEscola);
-        printf("%d\n", reg->nroInscricao);
-        gravarDadosBinario(reg, fin, 0);
-        
-
-        flag = ftell(fin);
-        fseek(fin, flag, SEEK_END);
- //  }
-        // fgets(buffer, sizeof(buffer), csv_file); //le a primeira linha com indices
-        // while(fgets(buffer, sizeof(buffer), csv_file) != NULL) {
-        //     lerRegistroTexto(&dados[i], buffer);
-        //     size += gravarDadosBinario(&dados[i], bin, size);
-
-        //     i++;
-        // }
-
-
-        //lerRegistroTextoGravaBinario();
-
-        // lerRegistroTexto(reg, buffer);
-        // gravarDadosBinario(reg, fin, 0);
-        // printRegistroDados(reg);
-    //}/* else {
-        // fseek(fin, (topo*80)+16000, SEEK_SET);
-        // lerRegistroTexto(reg, buffer);
-        // printRegistroDados(reg);
-    
-    
     fclose(fin);
    
 }

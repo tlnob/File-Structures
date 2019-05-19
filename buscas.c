@@ -122,4 +122,5 @@ void buscaCampoPorRRN(char *arquivo, int rrn, TregistroDados *reg) {
         }
         printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));
     }
+    fclose(fin);
 }

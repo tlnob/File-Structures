@@ -61,7 +61,7 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) {
     size += sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); 
     size += sizeof(double)     * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += sizeof(reg->data)  * fwrite(&reg->data, sizeof(reg->data), 1, bin);
-    
+
     if(reg ->tamanho_cidade != 0) {
         size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(int), 1, bin);
         fputc('4',bin);
@@ -86,12 +86,14 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) {
 // em um loop linha a linha do csv lendo para struct e gravando binário.
 void lerRegistroTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho, TregistroDados *dados, char bin_file[]) { //OK
         char buffer[80];
+        
         FILE *csv_file = fopen(csv_nome, "r"); 
         int size = 0, i = 0;
         if (csv_file == NULL) {
             printf("Falha no carregamento do arquivo.\n");
             exit(0);
-        }        
+        }
+               
         FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
         memcpy(cabecalho->status, "1", 1); 
         if(bin == NULL) {
