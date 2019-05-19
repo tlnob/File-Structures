@@ -13,8 +13,8 @@ int main () {
     TregistroDados dados[10000]; 
   
     char *file, *csv; 
-    char buffer[80], buff[80], arquivo[30], field[20], valor[40];
-    char *tok, *bin;// = "arquivo1.bin";
+    char buffer[80], buff[80], *arquivo, field[20], valor[40];
+    char *tok, *bin = "arquivo1.bin";
     int size = 0, i = 0, option = 0, len;
     FILE* fin;
     fflush(stdout);
@@ -47,8 +47,29 @@ int main () {
             scan_quote_string(valor);
             trim(field);
             trim(valor);
-            removeReg(arquivo, dados, field, valor, cabecalho); //todo arquivo vem com valor errado
+            removeReg(arquivo, dados, field, valor, cabecalho); 
         }
+        binarioNaTela2(arquivo);
+    } else if(option == 6) {
+        scanf("%d", &len);
+        char buffer[80];
+        char nroInscricao[6], nota[8], data[10], cidade[30], nomeEscola[30];
+        for(int i = 0; i < len; i++) {
+            
+            scanf("%s %s", nroInscricao, nota);
+            scan_quote_string(data);
+            scan_quote_string(cidade);
+            scan_quote_string(nomeEscola);
+            arquivo = "arquivo1.bin";   
+            puts(arquivo)         ;
+            trim(data);
+            trim(cidade);
+            trim(nomeEscola);
+
+            insertReg(arquivo, &dados[i], cabecalho, nroInscricao, nota, data, cidade, nomeEscola, i); 
+            
+        }
+        
         binarioNaTela2(arquivo);
     }
     if(cabecalho != NULL) {

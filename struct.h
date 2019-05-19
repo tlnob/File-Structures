@@ -43,9 +43,9 @@ int             buscaCampo(FILE *, TregistroDados *, char *, char *, TregistroCa
 TregistroDados* iteradorBinarioTexto(TregistroDados *, char *);
 void            buscaCampoPorRRN(char *, int, TregistroDados *);
 
-void            removeReg(char *filein, TregistroDados *reg, char *campo, char *valor_campo, TregistroCabecalho *cab);
-void            insert(char *, TregistroDados *, TregistroCabecalho *);
-void            update(char *, TregistroDados *, TregistroCabecalho *);
+void            removeReg(char *, TregistroDados *, char *, char *, TregistroCabecalho *);
+void            insertReg(char *, TregistroDados *, TregistroCabecalho *, char *, char *, char*, char*, char*, int);
+void            updateReg(char *, TregistroDados *, char *, char *, TregistroCabecalho *);
 void            handleRemove(int, FILE *);
 void            scan_quote_string(char *);
 void            trim(char *);
