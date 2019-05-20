@@ -196,8 +196,10 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         }
         fseek(fin, 16000, SEEK_SET); //pulando os 16k primeiros bytes do cabeçalho
         while(fread(buff, 80, 1, fin)) {
-            binarioParaTexto(buff, &dados[i]);
-            printRegistroDados(&dados[i]);
+            if(buff[0] != '*') {
+                binarioParaTexto(buff, &dados[i]);
+                printRegistroDados(&dados[i]);
+            }
             if(dados->cidade != NULL) {
                 free(dados->cidade);
                 dados->cidade = NULL;
@@ -209,6 +211,6 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
             i++;
         }
         fclose(fin);         
-        printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+1 da primeira página de disco
+        printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+1 da primeira página de disco
         return dados;
 }

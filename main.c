@@ -39,17 +39,26 @@ int main () {
     } else if(option == 4){ //funcionalidade 4 
         int rrn;
         scanf("%d", &rrn);
-        buscaCampoPorRRN(arquivo, rrn, dados);
-    } else if(option == 5) { //funcionalidade 5s
+        FILE *fin = fopen(arquivo, "rb"); 
+        if(arquivo == NULL) {
+            puts("Falha no processamento do arquivo.");
+            exit(0);
+        }
+        buscaCampoPorRRN(fin, rrn, dados);
+        fclose(fin);
+    } else if(option == 5) { //funcionalidade 5
         scanf("%d", &len);
-        for(int i = 0; i <= len; i++) {
-            scanf("%s", field); //lê as linhas seguintes
-            scan_quote_string(valor);
-            trim(field);
-            trim(valor);
-            removeReg(arquivo, dados, field, valor, cabecalho); //todo arquivo vem com valor errado
-        }        
-        binarioNaTela2(arquivo);
+        if(regExists(arquivo, len) != 0){ //checagem se o len é maior do que as linhas do arquivo
+            for(int i = 0; i <= len; i++) {
+                scanf("%s", field); 
+                scan_quote_string(valor);
+                trim(field);
+                trim(valor);
+                removeReg(arquivo, dados, field, valor, cabecalho); 
+            }
+            binarioNaTela2(arquivo);
+        } else printf("Falha no processamento do arquivo.");
+        
     } else if(option == 6) {
         scanf("%d", &len);
         char buffer[80];
@@ -66,9 +75,29 @@ int main () {
             trim(cidade);
             trim(nomeEscola);
             insertReg(arquivo, dados, cabecalho, nroInscricao, nota, data, cidade, nomeEscola, i); 
-            
         }
         binarioNaTela2(arquivo);
+    } else if(option == 7) {
+        // 7 arquivo.bin n RRN nomeCampo1 valorCampo1
+        scanf("%d", &len);
+        int rrn;
+        for(int i = 0; i < len; i++) {          
+            scanf("%d", &rrn);
+            scanf("%s", field); //lê as linhas seguintes
+            scan_quote_string(valor);
+            //printf("rrn: %d field:\n", rrn);
+            
+            trim(field);
+            trim(valor);
+            fflush(stdin);
+            printf("rrn: %d\n field: %s\n valor: %s\n\n", rrn, field, valor);
+            
+            updateReg(arquivo, dados, cabecalho, rrn, field, valor); 
+            
+        }
+    //binarioNaTela2(arquivo);
+
+
     }
     if(cabecalho != NULL) {
         free(cabecalho);
@@ -77,4 +106,5 @@ int main () {
 
     return 0;
 }
+
 
