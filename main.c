@@ -90,12 +90,12 @@ int main () {
             trim(field);
             trim(valor);
             fflush(stdin);
-            printf("rrn: %d\n field: %s\n valor: %s\n\n", rrn, field, valor);
+            //printf("rrn: %d\n field: %s\n valor: %s\n\n", rrn, field, valor);
             
             updateReg(arquivo, dados, cabecalho, rrn, field, valor); 
             
         }
-    //binarioNaTela2(arquivo);
+    binarioNaTela2(arquivo);
 
 
     }

@@ -192,16 +192,19 @@ void insertReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, char 
  * **/
 void updateReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, int rrn, char *field, char* valor) {
     
+    char buffer[80];
+    int i = 0, match = 0, bytesSize = 0;
+
     FILE *fin = fopen(filein, "r+b");
     if(fin == NULL) {
         puts("Falha no processamento do arquivo.");
         exit(0);
     }
 
-    buscaCampoPorRRN(fin, rrn, reg);
+    //buscaCampoPorRRN(fin, rrn, reg);
 
 
-    /*fseek(fin, -16000, SEEK_END);   //fazendo a conta excluindo os 16000 primeiros bytes da página de cabeçalho
+    fseek(fin, -16000, SEEK_END);   //fazendo a conta excluindo os 16000 primeiros bytes da página de cabeçalho
     bytesSize = ftell(fin);
     if (rrn*80 > bytesSize) { //se o RRN do stdin for maior que o tamanho de bytes do arquivo ele nao existe
         puts("Registro inexistente.");
@@ -211,13 +214,26 @@ void updateReg(char *filein, TregistroDados *reg, TregistroCabecalho *cab, int r
         while(fread(buffer, 80, 1, fin)) {
             fread(buffer, 80, 1, fin);
             binarioParaTexto(buffer, reg);
+
+            if(strcmp(field, "nroInscricao") == 0) {
+                reg->nroInscricao = atoi(valor);
+            } else if(strcmp(field, "nota")) {
+                reg->nota = atof(valor);
+            } else if(strcmp(field, "data")) {
+                strcpy(reg->data, field);
+            } else if(strcmp(field, "cidade")) {
+                reg->tamanho_cidade = alocarCamposVariaveis(field, &reg->cidade);
+            } else if(strcmp(field, "nomeEscola")) {
+                reg->tamanho_nomeEscola = alocarCamposVariaveis(field, &reg->nomeEscola);
+            }
+            gravarDadosBinario(reg, fin, 0);
+            
             printRegistroDados(reg);
-            i++;
             break;
         }
         printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));
     }
-    */
+    
 
     fclose(fin);
 }
