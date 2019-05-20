@@ -61,7 +61,7 @@ int gravarDadosBinario(TregistroDados *reg, FILE *bin, int size) {
     size += sizeof(int)        * fwrite(&reg->nroInscricao, sizeof(int), 1, bin); 
     size += sizeof(double)     * fwrite(&reg->nota, sizeof(reg->nota), 1, bin);
     size += sizeof(reg->data)  * fwrite(&reg->data, sizeof(reg->data), 1, bin);
-    
+
     if(reg ->tamanho_cidade != 0) {
         size += sizeof(int)         * fwrite(&reg->tamanho_cidade, sizeof(int), 1, bin);
         fputc('4',bin);
@@ -91,7 +91,8 @@ void lerRegistroTextoGravaBinario(char csv_nome[], TregistroCabecalho *cabecalho
         if (csv_file == NULL) {
             printf("Falha no carregamento do arquivo.\n");
             exit(0);
-        }        
+        }
+               
         FILE *bin  = fopen(bin_file, "wb"); //lê da struct e passa para arquivo binário
         memcpy(cabecalho->status, "1", 1); 
         if(bin == NULL) {
@@ -195,8 +196,10 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
         }
         fseek(fin, 16000, SEEK_SET); //pulando os 16k primeiros bytes do cabeçalho
         while(fread(buff, 80, 1, fin)) {
-            binarioParaTexto(buff, &dados[i]);
-            printRegistroDados(&dados[i]);
+            if(buff[0] != '*') {
+                binarioParaTexto(buff, &dados[i]);
+                printRegistroDados(&dados[i]);
+            }
             if(dados->cidade != NULL) {
                 free(dados->cidade);
                 dados->cidade = NULL;
@@ -208,6 +211,6 @@ TregistroDados* iteradorBinarioTexto(TregistroDados *dados, char *fileIn) {
             i++;
         }
         fclose(fin);         
-        printf("Número de páginas de disco acessadas: %d\n", 1+((i*80)/16000));  //+1 da primeira página de disco
+        printf("Número de páginas de disco acessadas: %d\n", 2+((i*80)/16000));  //+1 da primeira página de disco
         return dados;
 }
